@@ -27,6 +27,7 @@ local cycles_per_frame = 69905 -- Maximum number of cycles per frame
 emu_version = "0.1" 
 debug_log = false -- Log debug info on system console
 debug_ppu = true -- Show PPU data on screen
+use_profiler = true -- Enable profiler
 serial_port_enabled = true -- Log serial port output to system console
 
 -- Loading emulator components
@@ -39,6 +40,7 @@ dofile("app0:ram.lua")
 dofile("app0:gui.lua")
 dofile("app0:io.lua")
 dofile("app0:dma.lua")
+dofile("app0:profile.lua")
 
 -- Scan roms folder and keep only .gb files
 local tmp = System.listDirectory(rom_folder)
@@ -93,6 +95,9 @@ while true do
 			gui_pause_menu()
 		else -- Emulation active
 			emu_frame_ticks = 0
+			if use_profiler then
+				profile.start()
+			end
 			while emu_frame_ticks < cycles_per_frame do
 				-- Perform one CPU step
 				local start_tick = emu_ticks
@@ -104,7 +109,11 @@ while true do
 					emu_state = EMU_PAUSED
 				end
 			end
-			
+			if use_profiler then
+				profile.stop()
+				System.consolePrint(profile.report(30))
+				profile.reset()
+			end
 			-- Render on screen
 			if debug_ppu then
 				ppu_update_dbg_tex()
