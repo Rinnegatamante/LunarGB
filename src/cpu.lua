@@ -1018,120 +1018,82 @@ local cpu_exec_funcs = {
 	[IN.HALT] = _IN_HALT,
 }
 local cpu_name_funcs = {
-	[IN.NOP] ="NOP",
-	[IN.LD] ="LD",
-	[IN.LDH] ="LDH",
-	[IN.JP] ="JP",
-	[IN.DI] ="DI",
-	[IN.EI] ="EI",
-	[IN.XOR] ="XOR",
-	[IN.POP] ="POP",
-	[IN.PUSH] ="PUSH",
-	[IN.CALL] ="CALL",
-	[IN.JP] ="JP",
-	[IN.JR] ="JR",
-	[IN.RST] ="RST",
-	[IN.RET] ="RET",
-	[IN.RETI] ="RETI",
-	[IN.INC] ="INC",
-	[IN.DEC] ="DEC",
-	[IN.ADD] ="ADD",
-	[IN.SUB] ="SUB",
-	[IN.ADC] ="ADC",
-	[IN.SBC] ="SBC",
-	[IN.OR] ="OR",
-	[IN.CP] ="CP",
-	[IN.CB] ="CB",
-	[IN.AND] ="AND",
-	[IN.RLCA] ="RLCA",
-	[IN.RRCA] ="RRCA",
-	[IN.RLA] ="RLA",
-	[IN.RRA] ="RRA",
-	[IN.STOP] ="STOP",
-	[IN.DAA] ="DAA",
-	[IN.CPL] ="CPL",
-	[IN.SCF] ="SCF",
-	[IN.CCF] ="CCF",
-	[IN.HALT] ="HALT",
+	[IN.NOP] = "NOP",
+	[IN.LD] = "LD",
+	[IN.LDH] = "LDH",
+	[IN.JP] = "JP",
+	[IN.DI] = "DI",
+	[IN.EI] = "EI",
+	[IN.XOR] = "XOR",
+	[IN.POP] = "POP",
+	[IN.PUSH] = "PUSH",
+	[IN.CALL] = "CALL",
+	[IN.JP] = "JP",
+	[IN.JR] = "JR",
+	[IN.RST] = "RST",
+	[IN.RET] = "RET",
+	[IN.RETI] = "RETI",
+	[IN.INC] = "INC",
+	[IN.DEC] = "DEC",
+	[IN.ADD] = "ADD",
+	[IN.SUB] = "SUB",
+	[IN.ADC] = "ADC",
+	[IN.SBC] = "SBC",
+	[IN.OR] = "OR",
+	[IN.CP] = "CP",
+	[IN.CB] = "CB",
+	[IN.AND] = "AND",
+	[IN.RLCA] = "RLCA",
+	[IN.RRCA] = "RRCA",
+	[IN.RLA] = "RLA",
+	[IN.RRA] = "RRA",
+	[IN.STOP] = "STOP",
+	[IN.DAA] = "DAA",
+	[IN.CPL] = "CPL",
+	[IN.SCF] = "SCF",
+	[IN.CCF] = "CCF",
+	[IN.HALT] = "HALT",
 }
 
--- Instructions logging functions
-local function LOG_AM_R_D16()
-	return string.format("%s %s,0x%04X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data)
-end
-local function LOG_AM_R()
-	return string.format("%s %s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1])
-end
-local function LOG_AM_R_R()
-	return string.format("%s %s,%s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
-end
-local function LOG_AM_MR_R()
-	return string.format("%s (%s),%s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
-end
-local function LOG_AM_MR()
-	return string.format("%s (%s)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1])
-end
-local function LOG_AM_R_MR()
-	return string.format("%s %s,(%s)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
-end
-local function LOG_AM_R_D8()
-	return string.format("%s %s,0x%02X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
-end
-local function LOG_AM_R_HLI()
-	return string.format("%s %s,(%s+)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
-end
-local function LOG_AM_R_HLD()
-	return string.format("%s %s,(%s-)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
-end
-local function LOG_AM_HLI_R()
-	return string.format("%s (%s+),%s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
-end
-local function LOG_AM_HLD_R()
-	return string.format("%s (%s-),%s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
-end
-local function LOG_AM_A8_R()
-	return string.format("%s 0x%02X,%s", cpu_name_funcs[cpu_instr.type], bus_read(PC - 1), reg_names[cpu_instr.reg2])
-end
-local function LOG_AM_HL_SPR()
-	return string.format("%s (%s),SP+%d", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
-end
-local function LOG_AM_D8()
-	return string.format("%s 0x%02X", cpu_name_funcs[cpu_instr.type], cpu_fetched_data % 0x100)
-end
-local function LOG_AM_D16()
-	return string.format("%s 0x%04X", cpu_name_funcs[cpu_instr.type], cpu_fetched_data)
-end
-local function LOG_AM_MR_D8()
-	return string.format("%s (%s),0x%02X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
-end
-local function LOG_AM_A16_R()
-	return string.format("%s (0x%04X),%s", cpu_name_funcs[cpu_instr.type], cpu_fetched_data, reg_names[cpu_instr.reg2])
-end
-local instr_log_funcs = {
-	[AM_R_D16] = LOG_AM_R_D16,
-	[AM_R_A16] = LOG_AM_R_D16,
-	[AM_R] = LOG_AM_R,
-	[AM_R_R] = LOG_AM_R_R,
-	[AM_MR_R] = LOG_AM_MR_R,
-	[AM_MR] = LOG_AM_MR,
-	[AM_R_D8] = LOG_AM_R_D8,
-	[AM_R_A8] = LOG_AM_R_D8,
-	[AM_R_HLI] = LOG_AM_R_HLI,
-	[AM_R_HLD] = LOG_AM_R_HLD,
-	[AM_HLI_R] = LOG_AM_HLI_R,
-	[AM_HLD_R] = LOG_AM_HLD_R,
-	[AM_A8_R] = LOG_AM_A8_R,
-	[AM_HL_SPR] = LOG_AM_HL_SPR,
-	[AM_D8] = LOG_AM_D8,
-	[AM_D16] = LOG_AM_D16,
-	[AM_MR_D8] = LOG_AM_MR_D8,
-	[AM_A16_R] = LOG_AM_A16_R,
-	[AM_D16_R] = LOG_AM_A16_R,
-	[AM_R_MR] = LOG_AM_R_MR,	
-}
+-- Instructions logging function
 local function cpu_stringify_instr()
-	if cpu_instr.addr_mode then
-		return instr_log_funcs[cpu_instr.addr_mode]()
+	local addr_mode = cpu_instr.addr_mode
+	if addr_mode then
+		if addr_mode == AM_R then
+			return string.format("%s %s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1])
+		elseif addr_mode == AM_R_R then
+			return string.format("%s %s,%s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_HL_SPR then
+			return string.format("%s (%s),SP+%d", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
+		elseif addr_mode == AM_D8 then
+			return string.format("%s 0x%02X", cpu_name_funcs[cpu_instr.type], cpu_fetched_data % 0x100)
+		elseif addr_mode == AM_R_A8 or addr_mode == AM_R_D8 then
+			return string.format("%s %s,0x%02X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
+		elseif addr_mode == AM_D16 then
+			return string.format("%s 0x%04X", cpu_name_funcs[cpu_instr.type], cpu_fetched_data)
+		elseif addr_mode == AM_R_D16 or addr_mode == AM_R_A16 then
+			return string.format("%s %s,0x%04X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data)
+		elseif addr_mode == AM_MR_R then
+			return string.format("%s (%s),%s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_R_MR then
+			return string.format("%s %s,(%s)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_R_HLI then
+			return string.format("%s %s,(%s+)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_R_HLD then
+			return string.format("%s %s,(%s-)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_HLI_R then
+			return string.format("%s (%s+),%s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_HLD_R then
+			return string.format("%s (%s-),%s", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_A8_R then
+			return string.format("%s 0x%02X,%s", cpu_name_funcs[cpu_instr.type], bus_read(PC - 1), reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_A16_R or addr_mode == AM_D16_R then
+			return string.format("%s (0x%04X),%s", cpu_name_funcs[cpu_instr.type], cpu_fetched_data, reg_names[cpu_instr.reg2])
+		elseif addr_mode == AM_MR_D8 then
+			return string.format("%s (%s),0x%02X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
+		elseif addr_mode == AM_MR then
+			return string.format("%s (%s)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1])
+		end
 	else
 		return cpu_name_funcs[cpu_instr.type]
 	end
@@ -1142,90 +1104,89 @@ local serial_out = ""
 
 local function cpu_fetch_data()
 	local addr_mode = cpu_instr.addr_mode
-	if addr_mode == AM_R then
-		cpu_fetched_data = cpu_read_reg(cpu_instr.reg1)
-	elseif addr_mode == AM_R_R then
-		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
-	elseif addr_mode == AM_R_D8 or addr_mode == AM_HL_SPR or addr_mode == AM_D8 or addr_mode == AM_R_A8 then
-		cpu_fetched_data = bus_read(PC)
-		emu_incr_cycles(1)
-		PC = PC + 1
-	elseif addr_mode == AM_D16 or addr_mode == AM_R_D16 then
-		local low = bus_read(PC)
-		emu_incr_cycles(1)
-		local high = bus_read(PC + 1)
-		emu_incr_cycles(1)
-		cpu_fetched_data = bor(low, lshift(high, 8))
-		PC = PC + 2
-	elseif addr_mode == AM_MR_R then
-		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
-		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
-		cpu_use_mem_dest = true
-	
-		if cpu_instr.reg1 == RT_C then
-			cpu_mem_dest = bor(cpu_mem_dest, 0xFF00)
+	if addr_mode then
+		if addr_mode == AM_R then
+			cpu_fetched_data = cpu_read_reg(cpu_instr.reg1)
+		elseif addr_mode == AM_R_R then
+			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+		elseif addr_mode == AM_R_D8 or addr_mode == AM_HL_SPR or addr_mode == AM_D8 or addr_mode == AM_R_A8 then
+			cpu_fetched_data = bus_read(PC)
+			emu_incr_cycles(1)
+			PC = PC + 1
+		elseif addr_mode == AM_D16 or addr_mode == AM_R_D16 then
+			local low = bus_read(PC)
+			emu_incr_cycles(1)
+			local high = bus_read(PC + 1)
+			emu_incr_cycles(1)
+			cpu_fetched_data = bor(low, lshift(high, 8))
+			PC = PC + 2
+		elseif addr_mode == AM_MR_R then
+			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+			cpu_use_mem_dest = true
+			if cpu_instr.reg1 == RT_C then
+				cpu_mem_dest = bor(cpu_mem_dest, 0xFF00)
+			end
+		elseif addr_mode == AM_R_MR then
+			local addr = cpu_read_reg(cpu_instr.reg2)
+			if cpu_instr.reg2 == RT_C then
+				addr = bor(addr, 0xFF00)
+			end
+			cpu_fetched_data = bus_read(addr)
+			emu_incr_cycles(1)
+		elseif addr_mode == AM_R_HLI then
+			cpu_fetched_data = bus_read(cpu_read_reg(cpu_instr.reg2))
+			emu_incr_cycles(1)
+			cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) + 1)
+		elseif addr_mode == AM_R_HLD then
+			cpu_fetched_data = bus_read(cpu_read_reg(cpu_instr.reg2))
+			emu_incr_cycles(1)
+			cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) - 1)
+		elseif addr_mode == AM_HLI_R then
+			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+			cpu_use_mem_dest = true
+			cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) + 1)
+		elseif addr_mode == AM_HLD_R then
+			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+			cpu_use_mem_dest = true
+			cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) - 1)
+		elseif addr_mode == AM_A8_R then
+			cpu_mem_dest = bor(bus_read(PC), 0xFF00)
+			cpu_use_mem_dest = true
+			emu_incr_cycles(1)
+			PC = PC + 1
+		elseif addr_mode == AM_A16_R or addr_mode == AM_D16_R then
+			local low = bus_read(PC)
+			emu_incr_cycles(1)
+			local high = bus_read(PC + 1)
+			emu_incr_cycles(1)
+			cpu_mem_dest = bor(low, lshift(high, 8))
+			cpu_use_mem_dest = true
+			PC = PC + 2
+			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+		elseif addr_mode == AM_MR_D8 then
+			cpu_fetched_data = bus_read(PC)
+			emu_incr_cycles(1)
+			PC = PC + 1
+			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+			cpu_use_mem_dest = true
+		elseif addr_mode == AM_MR then
+			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+			cpu_use_mem_dest = true
+			cpu_fetched_data = bus_read(cpu_mem_dest)
+			emu_incr_cycles(1)
+		elseif addr_mode == AM_R_A16 then
+			local low = bus_read(PC)
+			emu_incr_cycles(1)
+			local high = bus_read(PC + 1)
+			emu_incr_cycles(1)
+			local addr = bor(low, lshift(high, 8))
+			PC = PC + 2
+			cpu_fetched_data = bus_read(addr)
+			emu_incr_cycles(1)
 		end
-	elseif addr_mode == AM_R_MR then
-		local addr = cpu_read_reg(cpu_instr.reg2)
-	
-		if cpu_instr.reg2 == RT_C then
-			addr = bor(addr, 0xFF00)
-		end
-	
-		cpu_fetched_data = bus_read(addr)
-		emu_incr_cycles(1)
-	elseif addr_mode == AM_R_HLI then
-		cpu_fetched_data = bus_read(cpu_read_reg(cpu_instr.reg2))
-		emu_incr_cycles(1)
-		cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) + 1)
-	elseif addr_mode == AM_R_HLD then
-		cpu_fetched_data = bus_read(cpu_read_reg(cpu_instr.reg2))
-		emu_incr_cycles(1)
-		cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) - 1)
-	elseif addr_mode == AM_HLI_R then
-		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
-		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
-		cpu_use_mem_dest = true
-		cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) + 1)
-	elseif addr_mode == AM_HLD_R then
-		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
-		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
-		cpu_use_mem_dest = true
-		cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) - 1)
-	elseif addr_mode == AM_A8_R then
-		cpu_mem_dest = bor(bus_read(PC), 0xFF00)
-		cpu_use_mem_dest = true
-		emu_incr_cycles(1)
-		PC = PC + 1
-	elseif addr_mode == AM_A16_R or addr_mode == AM_D16_R then
-		local low = bus_read(PC)
-		emu_incr_cycles(1)
-		local high = bus_read(PC + 1)
-		emu_incr_cycles(1)
-		cpu_mem_dest = bor(low, lshift(high, 8))
-		cpu_use_mem_dest = true
-		PC = PC + 2
-		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
-	elseif addr_mode == AM_MR_D8 then
-		cpu_fetched_data = bus_read(PC)
-		emu_incr_cycles(1)
-		PC = PC + 1
-		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
-		cpu_use_mem_dest = true
-	elseif addr_mode == AM_MR then
-		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
-		cpu_use_mem_dest = true
-		cpu_fetched_data = bus_read(cpu_mem_dest)
-		emu_incr_cycles(1)
-	elseif addr_mode == AM_R_A16 then
-		local low = bus_read(PC)
-		emu_incr_cycles(1)
-		local high = bus_read(PC + 1)
-		emu_incr_cycles(1)
-		local addr = bor(low, lshift(high, 8))
-		PC = PC + 2
-		cpu_fetched_data = bus_read(addr)
-		emu_incr_cycles(1)
 	end
 end
 
@@ -1252,13 +1213,13 @@ function cpu_step()
 		
 		-- Interpreter debugger
 		if debug_log then
-			local c = ((band(F, FLAG_C) == FLAG_C) and"C") or"-"
-			local z = ((band(F, FLAG_Z) == FLAG_Z) and"Z") or"-"
-			local n = ((band(F, FLAG_N) == FLAG_N) and"N") or"-"
-			local h = ((band(F, FLAG_H) == FLAG_H) and"H") or"-"
+			local c = ((band(F, FLAG_C) == FLAG_C) and"C") or "-"
+			local z = ((band(F, FLAG_Z) == FLAG_Z) and"Z") or "-"
+			local n = ((band(F, FLAG_N) == FLAG_N) and"N") or "-"
+			local h = ((band(F, FLAG_H) == FLAG_H) and"H") or "-"
 			System.consolePrint(
-				string.format("%08X - %04X: %-16s (%02X) A: %02X F: %s%s%s%s BC: %02X%02X DE: %02X%02X HL: %02X%02X",
-					emu.ticks, instr_pc, cpu_stringify_instr(), cpu_opcode, A, z, n, h, c, B, C, D, E, H, L))
+				string.format("%04X: %-16s (%02X) A: %02X F: %s%s%s%s BC: %02X%02X DE: %02X%02X HL: %02X%02X",
+					instr_pc, cpu_stringify_instr(), cpu_opcode, A, z, n, h, c, B, C, D, E, H, L))
 		end
 		
 		-- Serial data handling
@@ -1316,8 +1277,6 @@ function cpu_step()
 	elseif cpu_enable_interrupts then
 		cpu_master_interrupts = true
 	end
-
-	return false
 end
 
 function cpu_set_interrupt(intr)
