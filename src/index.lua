@@ -1,12 +1,10 @@
 -- Emulator state management
-EMU_NOT_RUNNING = 0
-EMU_RUNNING = 1
-EMU_PAUSED = 2
-emu = {
-	["state"] = EMU_NOT_RUNNING,
-	["ticks"] = 0,
-	["frame_ticks"] = 0
-}
+local EMU_NOT_RUNNING = 0
+local EMU_RUNNING = 1
+local EMU_PAUSED = 2
+local emu_state = EMU_NOT_RUNNING
+local emu_ticks = 0
+local emu_frame_ticks = 0
 
 local rom_folder = "ux0:data/LunarGB/roms/"
 rom_path = nil
@@ -15,7 +13,7 @@ rom_path = nil
 function emu_incr_cycles(cycles)
 	for i = 0, cycles - 1 do
 		for j = 0, 3 do
-			emu.ticks = emu.ticks + 1
+			emu_ticks = emu_ticks + 1
 			timer_tick()
 		end
 		
@@ -27,7 +25,7 @@ local cycles_per_frame = 69905 -- Maximum number of cycles per frame
 
 -- Emulator options
 emu_version = "0.1" 
-debug_log = true -- Log debug info on system console
+debug_log = false -- Log debug info on system console
 debug_ppu = true -- Show PPU data on screen
 serial_port_enabled = true -- Log serial port output to system console
 
@@ -78,8 +76,8 @@ while true do
 	lcd_init()
 	timer_init()
 	io_init()
-	emu.state = EMU_RUNNING
-	emu.ticks = 0
+	emu_state = EMU_RUNNING
+	emu_ticks = 0
 	
 	-- Init any optional stuffs
 	if debug_ppu then
@@ -87,23 +85,23 @@ while true do
 	end
 	
 	local oldpad = 0
-	while emu.state ~= EMU_NOT_RUNNING do
+	while emu_state ~= EMU_NOT_RUNNING do
 		Graphics.initBlend()
 		Screen.clear()
 		local pad = Controls.read()
-		if emu.state == EMU_PAUSED then -- Emulation paused
+		if emu_state == EMU_PAUSED then -- Emulation paused
 			gui_pause_menu()
 		else -- Emulation active
-			emu.frame_ticks = 0
-			while emu.frame_ticks < cycles_per_frame do
+			emu_frame_ticks = 0
+			while emu_frame_ticks < cycles_per_frame do
 				-- Perform one CPU step
-				local start_tick = emu.ticks
+				local start_tick = emu_ticks
 				cpu_step()
-				emu.frame_ticks = emu.frame_ticks + (emu.ticks - start_tick)
+				emu_frame_ticks = emu_frame_ticks + (emu_ticks - start_tick)
 			
 				-- Check if we want to pause the emulator
 				if Controls.check(pad, SCE_CTRL_LTRIGGER) and not Controls.check(oldpad, SCE_CTRL_LTRIGGER) then
-					emu.state = EMU_PAUSED
+					emu_state = EMU_PAUSED
 				end
 			end
 			
