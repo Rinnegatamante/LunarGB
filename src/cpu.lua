@@ -446,260 +446,87 @@ function cpu_init()
 end
 
 -- Registers reading functions
-local function _RT_A()
-	return A
-end
-local function _RT_F()
-	return F
-end
-local function _RT_B()
-	return B
-end
-local function _RT_C()
-	return C
-end
-local function _RT_D()
-	return D
-end
-local function _RT_E()
-	return E
-end
-local function _RT_H()
-	return H
-end
-local function _RT_L()
-	return L
-end
-local function _RT_SP()
-	return SP
-end
-local function _RT_PC()
-	return PC
-end
-local function _RT_AF()
-	return bor(F, lshift(A, 8))
-end
-local function _RT_BC()
-	return bor(C, lshift(B, 8))
-end
-local function _RT_DE()
-	return bor(E, lshift(D, 8))
-end
-local function _RT_HL()
-	return bor(L, lshift(H, 8))
-end
-local regs_read_funcs = {
-	[RT_A] = _RT_A,
-	[RT_F] = _RT_F,
-	[RT_B] = _RT_B,
-	[RT_C] = _RT_C,
-	[RT_D] = _RT_D,
-	[RT_E] = _RT_E,
-	[RT_H] = _RT_H,
-	[RT_L] = _RT_L,
-	[RT_SP] = _RT_SP,
-	[RT_PC] = _RT_PC,
-	[RT_AF] = _RT_AF,	
-	[RT_BC] = _RT_BC,	
-	[RT_DE] = _RT_DE,	
-	[RT_HL] = _RT_HL,	
-}
-
--- Registers writing functions
-local function _WRT_A(val)
-	A = band(val, 0xFF)
-end
-local function _WRT_F(val)
-	F = band(val, 0xFF)
-end
-local function _WRT_B(val)
-	B = band(val, 0xFF)
-end
-local function _WRT_C(val)
-	C = band(val, 0xFF)
-end
-local function _WRT_D(val)
-	D = band(val, 0xFF)
-end
-local function _WRT_E(val)
-	E = band(val, 0xFF)
-end
-local function _WRT_H(val)
-	H = band(val, 0xFF)
-end
-local function _WRT_L(val)
-	L = band(val, 0xFF)
-end
-local function _WRT_SP(val)
-	SP = band(val, 0xFFFF)
-end
-local function _WRT_PC(val)
-	PC = band(val, 0xFFFF)
-end
-local function _WRT_AF(val)
-	F = band(val, 0xFF)
-	A = rshift(band(val, 0xFF00), 8)
-end
-local function _WRT_BC(val)
-	C = band(val, 0xFF)
-	B = rshift(band(val, 0xFF00), 8)
-end
-local function _WRT_DE(val)
-	E = band(val, 0xFF)
-	D = rshift(band(val, 0xFF00), 8)
-end
-local function _WRT_HL(val)
-	L = band(val, 0xFF)
-	H = rshift(band(val, 0xFF00), 8)
-end
-local regs_write_funcs = {
-	[RT_A] = _WRT_A,
-	[RT_F] = _WRT_F,
-	[RT_B] = _WRT_B,
-	[RT_C] = _WRT_C,
-	[RT_D] = _WRT_D,
-	[RT_E] = _WRT_E,
-	[RT_H] = _WRT_H,
-	[RT_L] = _WRT_L,
-	[RT_SP] = _WRT_SP,
-	[RT_PC] = _WRT_PC,
-	[RT_AF] = _WRT_AF,	
-	[RT_BC] = _WRT_BC,	
-	[RT_DE] = _WRT_DE,	
-	[RT_HL] = _WRT_HL,	
-}
-function cpu_write_ie_reg(val)
-	IE = val
+local function cpu_read_reg(reg)
+	local r = reg
+	if r == RT_A then
+		return A
+	elseif r == RT_F then
+		return F
+	elseif r == RT_B then
+		return B
+	elseif r == RT_C then
+		return C
+	elseif r == RT_D then
+		return D
+	elseif r == RT_E then
+		return E
+	elseif r == RT_H then
+		return H
+	elseif r == RT_L then
+		return L
+	elseif r == RT_SP then
+		return SP
+	elseif r == RT_PC then
+		return PC
+	elseif r == RT_AF then
+		return bor(F, lshift(A, 8))
+	elseif r == RT_BC then
+		return bor(C, lshift(B, 8))
+	elseif r == RT_DE then
+		return bor(E, lshift(D, 8))
+	elseif r == RT_HL then
+		return bor(L, lshift(H, 8))
+	end
 end
 function cpu_read_ie_reg()
 	return IE
 end
 
--- Data fetching functions
-local function NOP()
-end
-local function _AM_R()
-	cpu_fetched_data = regs_read_funcs[cpu_instr.reg1]()
-end
-local function _AM_R_R()
-	cpu_fetched_data = regs_read_funcs[cpu_instr.reg2]()
-end
-local function _AM_R_D8()
-	cpu_fetched_data = bus_read(PC)
-	emu_incr_cycles(1)
-	PC = PC + 1
-end
-local function _AM_D16()
-	local low = bus_read(PC)
-	emu_incr_cycles(1)
-	local high = bus_read(PC + 1)
-	emu_incr_cycles(1)
-	cpu_fetched_data = bor(low, lshift(high, 8))
-	PC = PC + 2
-end
-local function _AM_MR_R()
-	cpu_fetched_data = regs_read_funcs[cpu_instr.reg2]()
-	cpu_mem_dest = regs_read_funcs[cpu_instr.reg1]()
-	cpu_use_mem_dest = true
-	
-	if cpu_instr.reg1 == RT_C then
-		cpu_mem_dest = bor(cpu_mem_dest, 0xFF00)
+-- Registers writing functions
+local function cpu_write_reg(reg, val)
+	local r = reg
+	if r == RT_A then
+		A = val % 0x100
+	elseif r == RT_F then
+		F = val % 0x100
+	elseif r == RT_B then
+		B = val % 0x100
+	elseif r == RT_C then
+		C = val % 0x100
+	elseif r == RT_D then
+		D = val % 0x100
+	elseif r == RT_E then
+		E = val % 0x100
+	elseif r == RT_H then
+		H = val % 0x100
+	elseif r == RT_L then
+		L = val % 0x100
+	elseif r == RT_SP then
+		SP = val % 0x10000
+	elseif r == RT_PC then
+		PC = val % 0x10000
+	elseif r == RT_AF then
+		F = val % 0x100
+		A = rshift(val, 8) % 0x100
+	elseif r == RT_BC then
+		C = val % 0x100
+		B = rshift(val, 8) % 0x100
+	elseif r == RT_DE then
+		E = val % 0x100
+		D = rshift(val, 8) % 0x100
+	elseif r == RT_HL then
+		L = val % 0x100
+		H = rshift(val, 8) % 0x100
 	end
 end
-local function _AM_R_MR()
-	local addr = regs_read_funcs[cpu_instr.reg2]()
-	
-	if cpu_instr.reg2 == RT_C then
-		addr = bor(addr, 0xFF00)
-	end
-	
-	cpu_fetched_data = bus_read(addr)
-	emu_incr_cycles(1)
-end
-local function _AM_R_HLI()
-	cpu_fetched_data = bus_read(regs_read_funcs[cpu_instr.reg2]())
-	emu_incr_cycles(1)
-	regs_write_funcs[RT_HL](regs_read_funcs[RT_HL]() + 1)
-end
-local function _AM_R_HLD()
-	cpu_fetched_data = bus_read(regs_read_funcs[cpu_instr.reg2]())
-	emu_incr_cycles(1)
-	regs_write_funcs[RT_HL](regs_read_funcs[RT_HL]() - 1)
-end
-local function _AM_HLI_R()
-	cpu_fetched_data = regs_read_funcs[cpu_instr.reg2]()
-	cpu_mem_dest = regs_read_funcs[cpu_instr.reg1]()
-	cpu_use_mem_dest = true
-	regs_write_funcs[RT_HL](regs_read_funcs[RT_HL]() + 1)
-end
-local function _AM_HLD_R()
-	cpu_fetched_data = regs_read_funcs[cpu_instr.reg2]()
-	cpu_mem_dest = regs_read_funcs[cpu_instr.reg1]()
-	cpu_use_mem_dest = true
-	regs_write_funcs[RT_HL](regs_read_funcs[RT_HL]() - 1)
-end
-local function _AM_A8_R()
-	cpu_mem_dest = bor(bus_read(PC), 0xFF00)
-	cpu_use_mem_dest = true
-	emu_incr_cycles(1)
-	PC = PC + 1
-end
-local function _AM_A16_R()
-	local low = bus_read(PC)
-	emu_incr_cycles(1)
-	local high = bus_read(PC + 1)
-	emu_incr_cycles(1)
-	cpu_mem_dest = bor(low, lshift(high, 8))
-	cpu_use_mem_dest = true
-	PC = PC + 2
-	cpu_fetched_data = regs_read_funcs[cpu_instr.reg2]()
-end
-local function _AM_MR_D8()
-	cpu_fetched_data = bus_read(PC)
-	emu_incr_cycles(1)
-	PC = PC + 1
-	cpu_mem_dest = regs_read_funcs[cpu_instr.reg1]()
-	cpu_use_mem_dest = true
-end
-local function _AM_MR()
-	cpu_mem_dest = regs_read_funcs[cpu_instr.reg1]()
-	cpu_use_mem_dest = true
-	cpu_fetched_data = bus_read(cpu_mem_dest)
-	emu_incr_cycles(1)
-end
-local function _AM_R_A16()
-	local low = bus_read(PC)
-	emu_incr_cycles(1)
-	local high = bus_read(PC + 1)
-	emu_incr_cycles(1)
-	local addr = bor(low, lshift(high, 8))
-	PC = PC + 2
-	cpu_fetched_data = bus_read(addr)
-	emu_incr_cycles(1)
+function cpu_write_ie_reg(val)
+	IE = val
 end
 
-local data_fetch_funcs = {
-	[AM_R] = _AM_R,
-	[AM_R_R] = _AM_R_R,
-	[AM_R_D8] = _AM_R_D8,
-	[AM_D16] = _AM_D16,
-	[AM_R_D16] = _AM_D16,
-	[AM_MR_R] = _AM_MR_R,
-	[AM_R_MR] = _AM_R_MR,
-	[AM_R_HLI] = _AM_R_HLI,
-	[AM_R_HLD] = _AM_R_HLD,
-	[AM_HLI_R] = _AM_HLI_R,
-	[AM_HLD_R] = _AM_HLD_R,
-	[AM_R_A8] = _AM_R_D8,
-	[AM_A8_R] = _AM_A8_R,
-	[AM_HL_SPR] = _AM_R_D8,
-	[AM_D8] = _AM_R_D8,
-	[AM_A16_R] = _AM_A16_R,
-	[AM_D16_R] = _AM_A16_R,
-	[AM_MR_D8] = _AM_MR_D8,
-	[AM_MR] = _AM_MR,
-	[AM_R_A16] = _AM_R_A16
-}
+
+-- No operation function
+local function NOP()
+end
 
 -- Condition checking functions
 local function cpu_check_cond()
@@ -771,7 +598,7 @@ local function _IN_CB()
 	local reg = rt_lookup[band(op, 0x07)]
 	local bit = band(rshift(op, 3), 0x07)
 	local bit_op = band(rshift(op, 6), 0x07)
-	local reg_val = regs_read_funcs[reg]()
+	local reg_val = cpu_read_reg(reg)
 	emu_incr_cycles(1)
 	
 	if reg == RT_HL then
@@ -783,90 +610,90 @@ local function _IN_CB()
 	elseif bit_op == 2 then -- RST
 		reg_val = band(reg_val, bnot(lshift(1, bit)))
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 	elseif bit_op == 3 then -- SET
 		reg_val = bor(reg_val, lshift(1, bit))
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 	elseif bit == 0 then -- RLC
 		local c = 0
-		local res = band(lshift(reg_val, 1), 0xFF)
+		local res = lshift(reg_val, 1) % 0x100
 		if band(reg_val, FLAG_Z) ~= 0 then
 			res = bor(res, 0x01)
 			c = 1
 		end
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), res)
+			bus_write(cpu_read_reg(RT_HL), res)
 		else
-			regs_write_funcs[reg](band(res, 0xFF))
+			cpu_write_reg(reg, res % 0x100)
 		end
 		cpu_set_flags((res == 0) and 1 or 0, 0, 0, c)
 	elseif bit == 1 then -- RRC
 		local old = reg_val
 		reg_val = bor(rshift(reg_val, 1), lshift(old, 7))
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 		cpu_set_flags((reg_val == 0) and 1 or 0, 0, 0, band(old, 1) and 1 or 0)
 	elseif bit == 2 then -- RL
 		local old = reg_val
 		reg_val = bor(lshift(reg_val, 1), band(F, FLAG_C))
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 		cpu_set_flags((reg_val == 0) and 1 or 0, 0, 0, band(old, 0x80) and 1 or 0)
 	elseif bit == 3 then -- RR
 		local old = reg_val
 		reg_val = bor(rshift(reg_val, 1), lshift(band(F, FLAG_C), 7))
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 		cpu_set_flags((reg_val == 0) and 1 or 0, 0, 0, band(old, 1) and 1 or 0)
 	elseif bit == 4 then -- SLA
 		local old = reg_val
 		reg_val = rshift(reg_val, 1)
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 		cpu_set_flags((reg_val == 0) and 1 or 0, 0, 0, band(old, 0x80) and 1 or 0)
 	elseif bit == 5 then -- SRA
 		local old = reg_val
 		reg_val = bor(rshift(reg_val, 1), band(reg_val, 0x80))
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 		cpu_set_flags((reg_val == 0) and 1 or 0, 0, 0, band(old, 1) and 1 or 0)
 	elseif bit == 6 then -- SWAP
 		reg_val = bor(rshift(band(reg_val, 0xF0), 4), lshift(band(reg_val, 0x0F), 4))
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 		cpu_set_flags((reg_val == 0) and 1 or 0, 0, 0, 0)
 	elseif bit == 7 then -- SRL
 		local old = reg_val
 		reg_val = rshift(reg_val, 1)
 		if reg == RT_HL then
-			bus_write(regs_read_funcs[RT_HL](), reg_val)
+			bus_write(cpu_read_reg(RT_HL), reg_val)
 		else
-			regs_write_funcs[reg](band(reg_val, 0xFF))
+			cpu_write_reg(reg, reg_val % 0x100)
 		end
 		cpu_set_flags((reg_val == 0) and 1 or 0, 0, 0, band(old, 1) and 1 or 0)
 	end
@@ -882,17 +709,17 @@ local function _IN_LD()
 		end
 		emu_incr_cycles(1)
 	elseif cpu_instr.addr_mode == AM_HL_SPR then
-		local r2 = regs_read_funcs[cpu_instr.reg2]()
+		local r2 = cpu_read_reg(cpu_instr.reg2)
 		local h = ((band(r2, 0x0F) + band(cpu_fetched_data, 0x0F)) >= 0x10) and 1 or 0
 		local c = ((band(r2, 0xFF) + band(cpu_fetched_data, 0xFF)) >= 0x100) and 1 or 0
 		cpu_set_flags(0, 0, h, c)
 		if cpu_fetched_data > 0x7F then
-			regs_write_funcs[cpu_instr.reg1](r2 + (cpu_fetched_data - 0x100))
+			cpu_write_reg(cpu_instr.reg1, r2 + (cpu_fetched_data - 0x100))
 		else
-			regs_write_funcs[cpu_instr.reg1](r2 + cpu_fetched_data)
+			cpu_write_reg(cpu_instr.reg1, r2 + cpu_fetched_data)
 		end
 	else
-		regs_write_funcs[cpu_instr.reg1](cpu_fetched_data)
+		cpu_write_reg(cpu_instr.reg1, cpu_fetched_data)
 	end
 end
 local function _IN_DI()
@@ -907,7 +734,7 @@ local function _IN_XOR()
 end
 local function _IN_LDH()
 	if cpu_instr.reg1 == RT_A then
-		regs_write_funcs[cpu_instr.reg1](bus_read(bor(0xFF00, cpu_fetched_data)))
+		cpu_write_reg(cpu_instr.reg1, bus_read(bor(0xFF00, cpu_fetched_data)))
 	else
 		bus_write(bor(0xFF00, cpu_fetched_data), A)
 	end
@@ -922,16 +749,16 @@ local function _IN_POP()
 	local val = bor(lshift(high, 8), low)
 
 	if cpu_instr.reg1 == RT_AF then
-		regs_write_funcs[cpu_instr.reg1](band(val, 0xFFF0))
+		cpu_write_reg(cpu_instr.reg1, band(val, 0xFFF0))
 	else
-		regs_write_funcs[cpu_instr.reg1](val)
+		cpu_write_reg(cpu_instr.reg1, val)
 	end
 end
 local function _IN_PUSH()
-	local high = band(rshift(regs_read_funcs[cpu_instr.reg1](), 8), 0xFF)
+	local high = band(rshift(cpu_read_reg(cpu_instr.reg1), 8), 0xFF)
 	emu_incr_cycles(1)
 	stack_push(high)
-	local low = band(regs_read_funcs[cpu_instr.reg1](), 0xFF)
+	local low = band(cpu_read_reg(cpu_instr.reg1), 0xFF)
 	emu_incr_cycles(1)
 	stack_push(low)
 	emu_incr_cycles(1)
@@ -979,13 +806,13 @@ local function _IN_INC()
 	end
 	
 	if cpu_instr.reg1 == RT_HL and cpu_instr.addr_mode == AM_MR then
-		local hl = regs_read_funcs[RT_HL]()
+		local hl = cpu_read_reg(RT_HL)
 		val = band(bus_read(hl) + 1, 0xFF)
 		bus_write(hl, val)
 	else
-		val = regs_read_funcs[cpu_instr.reg1]() + 1
-		regs_write_funcs[cpu_instr.reg1](val)
-		val = regs_read_funcs[cpu_instr.reg1]()
+		val = cpu_read_reg(cpu_instr.reg1) + 1
+		cpu_write_reg(cpu_instr.reg1, val)
+		val = cpu_read_reg(cpu_instr.reg1)
 	end
 	
 	if band(cpu_opcode, 0x03) ~= 0x03 then
@@ -999,14 +826,14 @@ local function _IN_DEC()
 	end
 	
 	if cpu_instr.reg1 == RT_HL and cpu_instr.addr_mode == AM_MR then
-		local hl = regs_read_funcs[RT_HL]()
+		local hl = cpu_read_reg(RT_HL)
 		val = bus_read(hl) - 1
 		if val < 0 then
 			val = 0x10000 + val
 		end
 		bus_write(hl, val)
 	else
-		val = regs_read_funcs[cpu_instr.reg1]() - 1
+		val = cpu_read_reg(cpu_instr.reg1) - 1
 		if cpu_instr.reg1 >= RT_SP then
 			if val < 0 then
 				val = 0x10000 + val
@@ -1016,7 +843,7 @@ local function _IN_DEC()
 				val = 0x100 + val
 			end
 		end
-		regs_write_funcs[cpu_instr.reg1](val)
+		cpu_write_reg(cpu_instr.reg1, val)
 	end
 	
 	if band(cpu_opcode, 0x0B) ~= 0x0B then
@@ -1029,7 +856,7 @@ local function _IN_ADD()
 		emu_incr_cycles(1)
 	end
 	
-	local r1 = regs_read_funcs[cpu_instr.reg1]()
+	local r1 = cpu_read_reg(cpu_instr.reg1)
 	if cpu_instr.reg1 == RT_SP then
 		if cpu_fetched_data > 0x7F then
 			val = r1 + (cpu_fetched_data - 0x100)
@@ -1057,16 +884,16 @@ local function _IN_ADD()
 		c = ((band(r1, 0xFF) + band(cpu_fetched_data, 0xFF)) >= 0x100) and 1 or 0
 	end
 	
-	regs_write_funcs[cpu_instr.reg1](band(val, 0xFFFF))
+	cpu_write_reg(cpu_instr.reg1, val % 0x10000)
 	cpu_set_flags(z, 0, h, c)
 end
 local function _IN_SUB()
-	local r1 = regs_read_funcs[cpu_instr.reg1]()
-	local val = band(r1 - cpu_fetched_data, 0xFFFF)
+	local r1 = cpu_read_reg(cpu_instr.reg1)
+	local val = (r1 - cpu_fetched_data) % 0x10000
 	local z = (val == 0) and 1 or 0
-	local h = ((regs_read_funcs[cpu_instr.reg1]() - cpu_fetched_data) == 0) and 1 or 0
-	local c = ((regs_read_funcs[cpu_instr.reg1]() - cpu_fetched_data) == 0) and 1 or 0
-	regs_write_funcs[cpu_instr.reg1](val)
+	local h = ((cpu_read_reg(cpu_instr.reg1) - cpu_fetched_data) == 0) and 1 or 0
+	local c = ((cpu_read_reg(cpu_instr.reg1) - cpu_fetched_data) == 0) and 1 or 0
+	cpu_write_reg(cpu_instr.reg1, val)
 	cpu_set_flags(z, 1, h, c)
 end
 local function _IN_ADC()
@@ -1077,11 +904,11 @@ end
 local function _IN_SBC()
 	local c = band(F, FLAG_C)
 	local val = cpu_fetched_data + c
-	local r1 = regs_read_funcs[cpu_instr.reg1]()
+	local r1 = cpu_read_reg(cpu_instr.reg1)
 	local z = ((r1 - val) == 0) and 1 or 0
 	local h = ((band(r1, 0x0F) - band(cpu_fetched_data, 0x0F) - c) < 0) and 1 or 0
 	local c = ((r1 - cpu_fetched_data - c) < 0) and 1 or 0
-	regs_write_funcs[cpu_instr.reg1](r1 - val)
+	cpu_write_reg(cpu_instr.reg1, r1 - val)
 	cpu_set_flags(z, 1, h, c)
 end
 local function _IN_OR()
@@ -1248,7 +1075,7 @@ local function LOG_AM_R_MR()
 	return string.format("%s %s,(%s)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
 end
 local function LOG_AM_R_D8()
-	return string.format("%s %s,0x%02X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], band(cpu_fetched_data, 0xFF))
+	return string.format("%s %s,0x%02X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
 end
 local function LOG_AM_R_HLI()
 	return string.format("%s %s,(%s+)", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], reg_names[cpu_instr.reg2])
@@ -1266,16 +1093,16 @@ local function LOG_AM_A8_R()
 	return string.format("%s 0x%02X,%s", cpu_name_funcs[cpu_instr.type], bus_read(PC - 1), reg_names[cpu_instr.reg2])
 end
 local function LOG_AM_HL_SPR()
-	return string.format("%s (%s),SP+%d", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], band(cpu_fetched_data, 0xFF))
+	return string.format("%s (%s),SP+%d", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
 end
 local function LOG_AM_D8()
-	return string.format("%s 0x%02X", cpu_name_funcs[cpu_instr.type], band(cpu_fetched_data, 0xFF))
+	return string.format("%s 0x%02X", cpu_name_funcs[cpu_instr.type], cpu_fetched_data % 0x100)
 end
 local function LOG_AM_D16()
 	return string.format("%s 0x%04X", cpu_name_funcs[cpu_instr.type], cpu_fetched_data)
 end
 local function LOG_AM_MR_D8()
-	return string.format("%s (%s),0x%02X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], band(cpu_fetched_data, 0xFF))
+	return string.format("%s (%s),0x%02X", cpu_name_funcs[cpu_instr.type], reg_names[cpu_instr.reg1], cpu_fetched_data % 0x100)
 end
 local function LOG_AM_A16_R()
 	return string.format("%s (0x%04X),%s", cpu_name_funcs[cpu_instr.type], cpu_fetched_data, reg_names[cpu_instr.reg2])
@@ -1313,6 +1140,95 @@ end
 -- Serial port output string
 local serial_out = ""
 
+local function cpu_fetch_data()
+	local addr_mode = cpu_instr.addr_mode
+	if addr_mode == AM_R then
+		cpu_fetched_data = cpu_read_reg(cpu_instr.reg1)
+	elseif addr_mode == AM_R_R then
+		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+	elseif addr_mode == AM_R_D8 or addr_mode == AM_HL_SPR or addr_mode == AM_D8 or addr_mode == AM_R_A8 then
+		cpu_fetched_data = bus_read(PC)
+		emu_incr_cycles(1)
+		PC = PC + 1
+	elseif addr_mode == AM_D16 or addr_mode == AM_R_D16 then
+		local low = bus_read(PC)
+		emu_incr_cycles(1)
+		local high = bus_read(PC + 1)
+		emu_incr_cycles(1)
+		cpu_fetched_data = bor(low, lshift(high, 8))
+		PC = PC + 2
+	elseif addr_mode == AM_MR_R then
+		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+		cpu_use_mem_dest = true
+	
+		if cpu_instr.reg1 == RT_C then
+			cpu_mem_dest = bor(cpu_mem_dest, 0xFF00)
+		end
+	elseif addr_mode == AM_R_MR then
+		local addr = cpu_read_reg(cpu_instr.reg2)
+	
+		if cpu_instr.reg2 == RT_C then
+			addr = bor(addr, 0xFF00)
+		end
+	
+		cpu_fetched_data = bus_read(addr)
+		emu_incr_cycles(1)
+	elseif addr_mode == AM_R_HLI then
+		cpu_fetched_data = bus_read(cpu_read_reg(cpu_instr.reg2))
+		emu_incr_cycles(1)
+		cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) + 1)
+	elseif addr_mode == AM_R_HLD then
+		cpu_fetched_data = bus_read(cpu_read_reg(cpu_instr.reg2))
+		emu_incr_cycles(1)
+		cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) - 1)
+	elseif addr_mode == AM_HLI_R then
+		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+		cpu_use_mem_dest = true
+		cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) + 1)
+	elseif addr_mode == AM_HLD_R then
+		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+		cpu_use_mem_dest = true
+		cpu_write_reg(RT_HL, cpu_read_reg(RT_HL) - 1)
+	elseif addr_mode == AM_A8_R then
+		cpu_mem_dest = bor(bus_read(PC), 0xFF00)
+		cpu_use_mem_dest = true
+		emu_incr_cycles(1)
+		PC = PC + 1
+	elseif addr_mode == AM_A16_R or addr_mode == AM_D16_R then
+		local low = bus_read(PC)
+		emu_incr_cycles(1)
+		local high = bus_read(PC + 1)
+		emu_incr_cycles(1)
+		cpu_mem_dest = bor(low, lshift(high, 8))
+		cpu_use_mem_dest = true
+		PC = PC + 2
+		cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+	elseif addr_mode == AM_MR_D8 then
+		cpu_fetched_data = bus_read(PC)
+		emu_incr_cycles(1)
+		PC = PC + 1
+		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+		cpu_use_mem_dest = true
+	elseif addr_mode == AM_MR then
+		cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
+		cpu_use_mem_dest = true
+		cpu_fetched_data = bus_read(cpu_mem_dest)
+		emu_incr_cycles(1)
+	elseif addr_mode == AM_R_A16 then
+		local low = bus_read(PC)
+		emu_incr_cycles(1)
+		local high = bus_read(PC + 1)
+		emu_incr_cycles(1)
+		local addr = bor(low, lshift(high, 8))
+		PC = PC + 2
+		cpu_fetched_data = bus_read(addr)
+		emu_incr_cycles(1)
+	end
+end
+
 function cpu_step()
 	local t = Timer.new()
 	if cpu_halted then
@@ -1332,9 +1248,7 @@ function cpu_step()
 		-- Fetching any required data for the given instruction
 		cpu_mem_dest = 0
 		cpu_use_mem_dest = false
-		if cpu_instr.addr_mode then
-			data_fetch_funcs[cpu_instr.addr_mode]()
-		end
+		cpu_fetch_data()
 		
 		-- Interpreter debugger
 		if debug_log then
