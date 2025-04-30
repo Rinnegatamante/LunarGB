@@ -90,20 +90,20 @@ local RT_HL   = 0x0E
 
 -- Register names lookup table
 local reg_names = {
-	[RT_A]  ="A",
-	[RT_F]  ="F",
-	[RT_B]  ="B",
-	[RT_C]  ="C",
-	[RT_D]  ="D",
-	[RT_E]  ="E",
-	[RT_H]  ="H",
-	[RT_L]  ="L",
-	[RT_SP] ="SP",
-	[RT_PC] ="PC",	
-	[RT_AF] ="AF",
-	[RT_BC] ="BC",	
-	[RT_DE] ="DE",
-	[RT_HL] ="HL",	
+	[RT_A]  = "A",
+	[RT_F]  = "F",
+	[RT_B]  = "B",
+	[RT_C]  = "C",
+	[RT_D]  = "D",
+	[RT_E]  = "E",
+	[RT_H]  = "H",
+	[RT_L]  = "L",
+	[RT_SP] = "SP",
+	[RT_PC] = "PC",	
+	[RT_AF] = "AF",
+	[RT_BC] = "BC",	
+	[RT_DE] = "DE",
+	[RT_HL] = "HL",	
 }
 
 -- Localized bit32 funcs

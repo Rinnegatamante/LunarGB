@@ -274,46 +274,44 @@ local ram_sizes = {
 }
 
 -- Rom state
-rom = {
-	["name"] = nil,
-	["data"] = nil,
-	["size"] = 0,
-	["type"] = 0,
-	["ram_size"] = 0,
-	["licensee"] = nil
-}
+local rom_name = nil
+local rom_data = nil
+local rom_size = 0
+local rom_type = 0
+local ram_size = 0
+local licensee = nil
 
 function cartridge_load(path)
 	-- Loading the ROM on memory
-	rom.size = System.statFile(path).size
+	rom_size = System.statFile(path).size
 	local file = System.openFile(path, READ_ONLY)
-	local rom_data_str = System.readFile(file, rom.size)
+	local rom_data_str = System.readFile(file, rom_size)
 	System.closeFile(file)
-	rom.data = {}
-	for i = 1, rom.size do
-		rom.data[i - 1] = string.byte(string.sub(rom_data_str, i, i + 1))
+	rom_data = {}
+	for i = 1, rom_size do
+		rom_data[i - 1] = string.byte(string.sub(rom_data_str, i, i + 1))
 	end
 		
 	-- Parsing the header
-	rom.name = string.sub(rom_data_str, 1 + cart_addrs.title.addr, 1 + cart_addrs.title.addr + cart_addrs.title.size)
-	rom.type = rom.data[cart_addrs.type.addr]
-	rom.size = bit32.lshift(32, rom.data[cart_addrs.rom_size.addr])
-	local licensee_val = rom.data[1 + cart_addrs.lic_code.addr]
+	rom_name = string.sub(rom_data_str, 1 + cart_addrs.title.addr, 1 + cart_addrs.title.addr + cart_addrs.title.size)
+	rom_type = rom_data[cart_addrs.type.addr]
+	rom_size = bit32.lshift(32, rom_data[cart_addrs.rom_size.addr])
+	local licensee_val = rom_data[1 + cart_addrs.lic_code.addr]
 	if licensee_val == 0x33 then
 		licensee_val = string.sub(rom_data_str, 1 + cart_addrs.new_lic_code.addr, 1 + cart_addrs.new_lic_code.addr + cart_addrs.new_lic_code.size)
-		rom.licensee = new_licensee_codes[licensee_val]
+		rom_licensee = new_licensee_codes[licensee_val]
 	else
-		rom.licensee = licensee_codes[licensee_val]
+		rom_licensee = licensee_codes[licensee_val]
 	end
-	if cart_types[rom.type].has_ram then
-		rom.ram_size = ram_sizes[rom.data[cart_addrs.ram_size.addr]]
+	if cart_types[rom_type].has_ram then
+		ram_size = ram_sizes[rom_data[cart_addrs.ram_size.addr]]
 	end
 	
 	-- Header checksum check
-	local hdr_checksum = rom.data[cart_addrs.hdr_checksum.addr]
+	local hdr_checksum = rom_data[cart_addrs.hdr_checksum.addr]
 	x = 0
 	for i = 0x134, 0x14c, 1 do
-		x = x - rom.data[i] - 1
+		x = x - rom_data[i] - 1
 	end
 	if bit32.band(x, 0xFF) == hdr_checksum then
 		System.consolePrint("Header checksum passed!")
@@ -322,16 +320,16 @@ function cartridge_load(path)
 	end
 
 	-- Debug logging
-	System.consolePrint("Game Title: " .. rom.name)
-	System.consolePrint("Type: " .. cart_types[rom.type].name)
-	System.consolePrint("ROM Size: " .. rom.size .. " KBs")
-	System.consolePrint("RAM Size: " .. rom.ram_size .. " KBs")
-	System.consolePrint("Licensed by: " .. rom.licensee)
+	System.consolePrint("Game Title: " .. rom_name)
+	System.consolePrint("Type: " .. cart_types[rom_type].name)
+	System.consolePrint("ROM Size: " .. rom_size .. " KBs")
+	System.consolePrint("RAM Size: " .. ram_size .. " KBs")
+	System.consolePrint("Licensed by: " .. rom_licensee)
 end
 
 function cartridge_write(addr, val)
 end
 
 function cartridge_read(addr)
-	return rom.data[addr]
+	return rom_data[addr]
 end
