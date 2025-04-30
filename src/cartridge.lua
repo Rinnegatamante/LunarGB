@@ -274,12 +274,12 @@ local ram_sizes = {
 }
 
 -- Rom state
-local rom_name = nil
+rom_name = nil
 local rom_data = nil
 local rom_size = 0
 local rom_type = 0
 local ram_size = 0
-local licensee = nil
+local rom_licensee = nil
 
 function cartridge_load(path)
 	-- Loading the ROM on memory
@@ -296,9 +296,10 @@ function cartridge_load(path)
 	rom_name = string.sub(rom_data_str, 1 + cart_addrs.title.addr, 1 + cart_addrs.title.addr + cart_addrs.title.size)
 	rom_type = rom_data[cart_addrs.type.addr]
 	rom_size = bit32.lshift(32, rom_data[cart_addrs.rom_size.addr])
-	local licensee_val = rom_data[1 + cart_addrs.lic_code.addr]
+	local licensee_val = rom_data[cart_addrs.lic_code.addr]
 	if licensee_val == 0x33 then
 		licensee_val = string.sub(rom_data_str, 1 + cart_addrs.new_lic_code.addr, 1 + cart_addrs.new_lic_code.addr + cart_addrs.new_lic_code.size)
+		System.consolePrint(tostring(licensee_val))
 		rom_licensee = new_licensee_codes[licensee_val]
 	else
 		rom_licensee = licensee_codes[licensee_val]

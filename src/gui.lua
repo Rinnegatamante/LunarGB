@@ -23,12 +23,12 @@ function gui_pause_menu()
 	Gui.initBlend()
 	Gui.setWindowPos(0, 0, SET_ALWAYS)
 	Gui.setWindowSize(960, 544, SET_ALWAYS)
-	Gui.initWindow("LunarGB v." .. emu_version .. " - " .. rom.name, FLAG_NO_MOVE + FLAG_NO_RESIZE + FLAG_NO_COLLAPSE)
+	Gui.initWindow("LunarGB v." .. emu_version .. " - " .. rom_name, FLAG_NO_MOVE + FLAG_NO_RESIZE + FLAG_NO_COLLAPSE)
 	if Gui.drawButton("Resume emulation") then
-		emu.state = EMU_RUNNING
+		emu_state = EMU_RUNNING
 	end
 	if Gui.drawButton("Close game") then
-		emu.state = EMU_NOT_RUNNING
+		emu_state = EMU_NOT_RUNNING
 		rom_path = nil
 	end
 	Gui.termWindow()

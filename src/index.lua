@@ -1,8 +1,8 @@
 -- Emulator state management
-local EMU_NOT_RUNNING = 0
-local EMU_RUNNING = 1
-local EMU_PAUSED = 2
-local emu_state = EMU_NOT_RUNNING
+EMU_NOT_RUNNING = 0
+EMU_RUNNING = 1
+EMU_PAUSED = 2
+emu_state = EMU_NOT_RUNNING
 local emu_ticks = 0
 local emu_frame_ticks = 0
 
@@ -27,7 +27,7 @@ local cycles_per_frame = 69905 -- Maximum number of cycles per frame
 emu_version = "0.1" 
 debug_log = false -- Log debug info on system console
 debug_ppu = true -- Show PPU data on screen
-use_profiler = true -- Enable profiler
+use_profiler = false -- Enable profiler
 serial_port_enabled = true -- Log serial port output to system console
 
 -- Loading emulator components
