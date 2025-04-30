@@ -14,7 +14,7 @@ end
 function timer_tick()
 	local timer_update
 	local prev_div = timer_div
-	timer_div = band(timer_div + 1, 0xFFFF)
+	timer_div = (timer_div + 1) % 0x10000
 	
 	local tac_bits = band(timer_tac, 0x03)
 	if tac_bits == 0 then
