@@ -409,8 +409,8 @@ local function stack_push(val)
 	bus_write(SP, val)
 end
 local function stack_push16(val)
-	stack_push(band(rshift(val, 8), 0xFF))
-	stack_push(band(val, 0xFF))
+	stack_push(rshift(val, 8) % 0x100)
+	stack_push(val % 0x100)
 end
 local function stack_pop()
 	local ret = bus_read(SP)
