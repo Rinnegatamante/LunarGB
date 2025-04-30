@@ -702,27 +702,15 @@ local data_fetch_funcs = {
 }
 
 -- Condition checking functions
-local function _CT_NZ()
-	return band(F, FLAG_Z) == 0
-end
-local function _CT_Z()
-	return band(F, FLAG_Z) == FLAG_Z
-end
-local function _CT_NC()
-	return band(F, FLAG_C) == 0
-end
-local function _CT_C()
-	return band(F, FLAG_C) == FLAG_C
-end
-local cond_funcs = {
-	[CT_C] = _CT_C,
-	[CT_NC] = _CT_NC,
-	[CT_Z] = _CT_Z,
-	[CT_NZ] = _CT_NZ
-}
 local function cpu_check_cond()
-	if cpu_instr.cnd then
-		return cond_funcs[cpu_instr.cnd]()
+	if cpu_instr.cnd == CT_C then
+		return band(F, FLAG_C) == FLAG_C
+	elseif cpu_instr.cnd == CT_NC then
+		return band(F, FLAG_C) == 0
+	elseif cpu_instr.cnd == CT_Z then
+		return band(F, FLAG_Z) == FLAG_Z
+	elseif cpu_instr.cnd == CT_NZ then
+		return band(F, FLAG_Z) == 0
 	end
 	
 	return true
