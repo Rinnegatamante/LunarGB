@@ -25,7 +25,7 @@ local cycles_per_frame = 69905 -- Maximum number of cycles per frame
 
 -- Emulator options
 emu_version = "0.1" 
-debug_log = false -- Log debug info on system console
+debug_log = true -- Log debug info on system console
 debug_ppu = true -- Show PPU data on screen
 use_profiler = false -- Enable profiler
 serial_port_enabled = true -- Log serial port output to system console
@@ -62,12 +62,23 @@ end
 gui_init()
 
 while true do
+	local oldpad = 0
+	local show_options = false
 	while rom_path == nil do
+		local pad = Controls.read()
 		Graphics.initBlend()
 		Screen.clear()
-		rom_path = gui_rom_selector(roms)
+		if show_options then
+			gui_emu_options()
+		else
+			rom_path = gui_rom_selector(roms)
+		end
+		if Controls.check(pad, SCE_CTRL_LTRIGGER) and not Controls.check(oldpad, SCE_CTRL_LTRIGGER) then
+			show_options = not show_options
+		end
 		Graphics.termBlend()
 		Screen.flip()
+		oldpad = pad
 	end
 	
 	-- Main emulator code start
@@ -85,8 +96,7 @@ while true do
 	if debug_ppu then
 		ppu_dbg_tex = Graphics.createImage(128, 192, Color.new(0, 0, 0), MEM_RAM)
 	end
-	
-	local oldpad = 0
+
 	while emu_state ~= EMU_NOT_RUNNING do
 		Graphics.initBlend()
 		Screen.clear()
