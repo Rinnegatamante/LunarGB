@@ -898,16 +898,16 @@ local function _IN_SUB()
 end
 local function _IN_ADC()
 	local c = band(F, FLAG_C)
-	A = band(A + cpu_fetched_data + c)
+	A = (A + cpu_fetched_data + c) % 0x100
 	cpu_set_flags((A == 0) and 1 or 0, 0, ((band(A, 0x0F) + band(cpu_fetched_data, 0x0F) + c) > 0x0F) and 1 or 0, (A + cpu_fetched_data + c > 0xFF) and 1 or 0)
 end
 local function _IN_SBC()
-	local c = band(F, FLAG_C)
-	local val = cpu_fetched_data + c
+	local _c = band(F, FLAG_C)
+	local val = cpu_fetched_data + _c
 	local r1 = cpu_read_reg(cpu_instr.reg1)
 	local z = ((r1 - val) == 0) and 1 or 0
-	local h = ((band(r1, 0x0F) - band(cpu_fetched_data, 0x0F) - c) < 0) and 1 or 0
-	local c = ((r1 - cpu_fetched_data - c) < 0) and 1 or 0
+	local h = ((band(r1, 0x0F) - band(cpu_fetched_data, 0x0F) - _c) < 0) and 1 or 0
+	local c = ((r1 - cpu_fetched_data - _c) < 0) and 1 or 0
 	cpu_write_reg(cpu_instr.reg1, r1 - val)
 	cpu_set_flags(z, 1, h, c)
 end
@@ -950,9 +950,9 @@ end
 local function _IN_DAA()
 	local u = 0
 	local fc = 0
-	local has_h = band(F, FLAG_H)
-	local has_n = band(F, FLAG_N)
-	local has_c = band(F, FLAG_C)
+	local has_h = band(F, FLAG_H) == FLAG_H
+	local has_n = band(F, FLAG_N) == FLAG_N
+	local has_c = band(F, FLAG_C) == FLAG_C
 	if has_h or (band(A, 0x0F) > 9 and not has_n) then
 		u = 6
 	end
@@ -975,7 +975,7 @@ local function _IN_SCF()
 	cpu_set_flags(-1, 0, 0, 1)
 end
 local function _IN_CCF()
-	cpu_set_flags(-1, 0, 0, bxor(band(F, FLAG_C), 1))
+	cpu_set_flags(-1, 0, 0, bxor((band(F, FLAG_C) == FLAG_C) and 1 or 0, 1))
 end
 local function _IN_HALT()
 	cpu_halted = true
@@ -1196,7 +1196,7 @@ function cpu_step()
 		-- CPU is halted due to an interrupt
 		emu_incr_cycles(1)
 		
-		if cpu_interrupts then
+		if cpu_interrupts ~= 0 then
 			cpu_halted = false
 		end
 	else
@@ -1213,10 +1213,10 @@ function cpu_step()
 		
 		-- Interpreter debugger
 		if debug_log then
-			local c = ((band(F, FLAG_C) == FLAG_C) and"C") or "-"
-			local z = ((band(F, FLAG_Z) == FLAG_Z) and"Z") or "-"
-			local n = ((band(F, FLAG_N) == FLAG_N) and"N") or "-"
-			local h = ((band(F, FLAG_H) == FLAG_H) and"H") or "-"
+			local c = ((band(F, FLAG_C) == FLAG_C) and "C") or "-"
+			local z = ((band(F, FLAG_Z) == FLAG_Z) and "Z") or "-"
+			local n = ((band(F, FLAG_N) == FLAG_N) and "N") or "-"
+			local h = ((band(F, FLAG_H) == FLAG_H) and "H") or "-"
 			System.consolePrint(
 				string.format("%04X: %-16s (%02X) A: %02X F: %s%s%s%s BC: %02X%02X DE: %02X%02X HL: %02X%02X",
 					instr_pc, cpu_stringify_instr(), cpu_opcode, A, z, n, h, c, B, C, D, E, H, L))
@@ -1242,31 +1242,31 @@ function cpu_step()
 
 	-- Interrupts handling
 	if cpu_master_interrupts then
-		if band(cpu_interrupts, IT_VBLANK) and band(IE, IT_VBLANK) then
+		if (band(cpu_interrupts, IT_VBLANK) == IT_VBLANK) and (band(IE, IT_VBLANK) == IT_VBLANK) then
 			stack_push16(PC)
 			PC = 0x40
 			cpu_interrupts = band(cpu_interrupts, bnot(IT_VBLANK))
 			cpu_halted = false
 			cpu_master_interrupts = false
-		elseif band(cpu_interrupts, IT_LCD_START) and band(IE, IT_LCD_START) then
+		elseif (band(cpu_interrupts, IT_LCD_START) == IT_LCD_START) and (band(IE, IT_LCD_START) == IT_LCD_START) then
 			stack_push16(PC)
 			PC = 0x48
 			cpu_interrupts = band(cpu_interrupts, bnot(IT_LCD_START))
 			cpu_halted = false
 			cpu_master_interrupts = false
-		elseif band(cpu_interrupts, IT_TIMER) and band(IE, IT_TIMER) then
+		elseif (band(cpu_interrupts, IT_TIMER) == IT_TIMER) and (band(IE, IT_TIMER) == IT_TIMER) then
 			stack_push16(PC)
 			PC = 0x50
 			cpu_interrupts = band(cpu_interrupts, bnot(IT_TIMER))
 			cpu_halted = false
 			cpu_master_interrupts = false
-		elseif band(cpu_interrupts, IT_SERIAL) and band(IE, IT_SERIAL) then
+		elseif (band(cpu_interrupts, IT_SERIAL) == IT_SERIAL) and (band(IE, IT_SERIAL) == IT_SERIAL) then
 			stack_push16(PC)
 			PC = 0x58
 			cpu_interrupts = band(cpu_interrupts, bnot(IT_SERIAL))
 			cpu_halted = false
 			cpu_master_interrupts = false
-		elseif band(cpu_interrupts, IT_JOYPAD) and band(IE, IT_JOYPAD) then
+		elseif (band(cpu_interrupts, IT_JOYPAD) == IT_JOYPAD) and (band(IE, IT_JOYPAD) == IT_JOYPAD) then
 			stack_push16(PC)
 			PC = 0x60
 			cpu_interrupts = band(cpu_interrupts, bnot(IT_JOYPAD))
