@@ -125,7 +125,7 @@ local rshift = bit32.rshift
 
 -- Interrupt types
 IT_VBLANK    = 0x01
-IT_LCD_START = 0x02
+IT_LCD_STAT = 0x02
 IT_TIMER     = 0x04
 IT_SERIAL    = 0x08
 IT_JOYPAD    = 0x10
@@ -1207,10 +1207,10 @@ function cpu_step()
 			cpu_interrupts = band(cpu_interrupts, bnot(IT_VBLANK))
 			cpu_halted = false
 			cpu_master_interrupts = false
-		elseif (band(cpu_interrupts, IT_LCD_START) == IT_LCD_START) and (band(IE, IT_LCD_START) == IT_LCD_START) then
+		elseif (band(cpu_interrupts, IT_LCD_STAT) == IT_LCD_STAT) and (band(IE, IT_LCD_STAT) == IT_LCD_STAT) then
 			stack_push16(PC)
 			PC = 0x48
-			cpu_interrupts = band(cpu_interrupts, bnot(IT_LCD_START))
+			cpu_interrupts = band(cpu_interrupts, bnot(IT_LCD_STAT))
 			cpu_halted = false
 			cpu_master_interrupts = false
 		elseif (band(cpu_interrupts, IT_TIMER) == IT_TIMER) and (band(IE, IT_TIMER) == IT_TIMER) then

@@ -3,8 +3,6 @@ EMU_NOT_RUNNING = 0
 EMU_RUNNING = 1
 EMU_PAUSED = 2
 emu_state = EMU_NOT_RUNNING
-local emu_ticks = 0
-local emu_frame_ticks = 0
 
 local rom_folder = "ux0:data/LunarGB/roms/"
 rom_path = nil
@@ -13,7 +11,6 @@ rom_path = nil
 function emu_incr_cycles(cycles)
 	for i = 0, cycles - 1 do
 		for j = 0, 3 do
-			emu_ticks = emu_ticks + 1
 			timer_tick()
 			ppu_tick()
 		end
@@ -24,7 +21,7 @@ end
 
 -- Emulator options
 emu_version = "0.1" 
-debug_log = true -- Log debug info on system console
+debug_log = false -- Log debug info on system console
 debug_ppu = true -- Show PPU data on screen
 use_profiler = false -- Enable profiler
 serial_port_enabled = true -- Log serial port output to system console
@@ -97,16 +94,13 @@ while true do
 		if emu_state == EMU_PAUSED then -- Emulation paused
 			gui_pause_menu()
 		else -- Emulation active
-			emu_frame_ticks = 0
 			if use_profiler then
 				profile.start()
 			end
 			local work_frame = ppu_cur_frame
-			while work_frame == ppu_cur_frame do
+			while work_frame == ppu_cur_frame and emu_state == EMU_RUNNING do
 				-- Perform one CPU step
-				local start_tick = emu_ticks
 				cpu_step()
-				emu_frame_ticks = emu_frame_ticks + (emu_ticks - start_tick)
 			
 				-- Check if we want to pause the emulator
 				if Controls.check(pad, SCE_CTRL_LTRIGGER) and not Controls.check(oldpad, SCE_CTRL_LTRIGGER) then
@@ -118,7 +112,7 @@ while true do
 				System.consolePrint(profile.report(30))
 				profile.reset()
 			end
-			-- Render on screen
+			-- Render PPU debug stuffs on screen
 			if debug_ppu then
 				ppu_show_dbg_tex()
 			end

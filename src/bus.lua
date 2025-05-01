@@ -30,7 +30,7 @@ function bus_write(addr, val)
 		return 0
 	elseif addr < 0xFEA0 then
 		-- OAM
-		if not dma.active then
+		if not dma_active then
 			ppu_oam_write(addr, val)
 		end
 	elseif addr < 0xFF00 then
