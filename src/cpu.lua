@@ -1,53 +1,51 @@
 -- Instructions types
-local IN = {
-	["NOP"] = 0x01,
-	["LD"] = 0x02,
-	["INC"] = 0x03,
-	["DEC"] = 0x04,
-	["RLCA"] = 0x05,
-	["ADD"] = 0x06,
-	["RRCA"] = 0x07,
-	["STOP"] = 0x08,
-	["RLA"] = 0x09,
-	["JR"] = 0x0A,
-	["RRA"] = 0x0B,
-	["DAA"] = 0x0C,
-	["CPL"] = 0x0D,
-	["SCF"] = 0x0E,
-	["CCF"] = 0x0F,
-	["HALT"] = 0x10,
-	["ADC"] = 0x11,
-	["SUB"] = 0x12,
-	["SBC"] = 0x13,
-	["AND"] = 0x14,
-	["XOR"] = 0x15,
-	["OR"] = 0x16,
-	["CP"] = 0x17,
-	["POP"] = 0x18,
-	["JP"] = 0x19,
-	["PUSH"] = 0x1A,
-	["RET"] = 0x1B,
-	["CB"] = 0x1C,
-	["CALL"] = 0x1D,
-	["RETI"] = 0x1E,
-	["LDH"] = 0x1F,
-	["JPHL"] = 0x20,
-	["DI"] = 0x21,
-	["EI"] = 0x22,
-	["RST"] = 0x23,
-	["ERR"] = 0x24,
-	["RLC"] = 0x25,
-	["RRC"] = 0x26,
-	["RL"] = 0x27,
-	["RR"] = 0x28,
-	["SLA"] = 0x29,
-	["SRA"] = 0x2A,
-	["SWAP"] = 0x2B,
-	["SRL"] = 0x2C,
-	["BIT"] = 0x2D,
-	["RES"] = 0x2E,
-	["SET"] = 0x2F,
-}
+-- IN_NOP = 0x01
+-- IN_LD = 0x02
+-- IN_INC = 0x03
+-- IN_DEC = 0x04
+-- IN_RLCA = 0x05
+-- IN_ADD = 0x06
+-- IN_RRCA = 0x07
+-- IN_STOP = 0x08
+-- IN_RLA = 0x09
+-- IN_JR = 0x0A
+-- IN_RRA = 0x0B
+-- IN_DAA = 0x0C
+-- IN_CPL = 0x0D
+-- IN_SCF = 0x0E
+-- IN_CCF = 0x0F
+-- IN_HALT = 0x10
+-- IN_ADC = 0x11
+-- IN_SUB = 0x12
+-- IN_SBC = 0x13
+-- IN_AND = 0x14
+-- IN_XOR = 0x15
+-- IN_OR = 0x16
+-- IN_CP = 0x17
+-- IN_POP = 0x18
+-- IN_JP = 0x19
+-- IN_PUSH = 0x1A
+-- IN_RET = 0x1B
+-- IN_CB = 0x1C
+-- IN_CALL = 0x1D
+-- IN_RETI = 0x1E
+-- IN_LDH = 0x1F
+-- IN_JPHL = 0x20
+-- IN_DI = 0x21
+-- IN_EI = 0x22
+-- IN_RST = 0x23
+-- IN_ERR = 0x24
+-- IN_RLC = 0x25
+-- IN_RRC = 0x26
+-- IN_RL = 0x27
+-- IN_RR = 0x28
+-- IN_SLA = 0x29
+-- IN_SRA = 0x2A
+-- IN_SWAP = 0x2B
+-- IN_SRL = 0x2C
+-- IN_BIT = 0x2D
+-- IN_RES = 0x2E
+-- IN_SET = 0x2F
 
 -- Address mode types
 -- AM_R_D16  = 0x01
@@ -87,6 +85,18 @@ local IN = {
 -- RT_DE   = 0x0D
 -- RT_HL   = 0x0E
 
+-- Condition types
+-- CT_NZ   = 0x01
+-- CT_Z    = 0x02
+-- CT_NC   = 0x03
+-- CT_C    = 0x04
+
+-- Register F flags bitmask
+-- FLAG_C = 0x10
+-- FLAG_H = 0x20
+-- FLAG_N = 0x40
+-- FLAG_Z = 0x80
+
 -- Register names lookup table
 local reg_names = {
 	[0x01]  = "A",
@@ -113,18 +123,6 @@ local bor = bit32.bor
 local lshift = bit32.lshift
 local rshift = bit32.rshift
 
--- Condition types
--- CT_NZ   = 0x01
--- CT_Z    = 0x02
--- CT_NC   = 0x03
--- CT_C    = 0x04
-
--- Register F flags bitmask
--- FLAG_C = 0x10
--- FLAG_H = 0x20
--- FLAG_N = 0x40
--- FLAG_Z = 0x80
-
 -- Interrupt types
 IT_VBLANK    = 0x01
 IT_LCD_START = 0x02
@@ -134,251 +132,251 @@ IT_JOYPAD    = 0x10
 
 -- 0x01
 local instrs = {
-	[0x00] = {["type"] = IN.NOP},
-	[0x01] = {["type"] = IN.LD, ["addr_mode"] = 0x01, ["reg1"] = 0x0C},
-	[0x02] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0C, ["reg2"] = 0x01},
-	[0x03] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x0C},
-	[0x04] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x03},
-	[0x05] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x03},
-	[0x06] = {["type"] = IN.LD, ["addr_mode"] = 0x05, ["reg1"] = 0x03},
-	[0x07] = {["type"] = IN.RLCA},
-	[0x08] = {["type"] = IN.LD, ["addr_mode"] = 0x13, ["reg2"] = 0x09},
-	[0x09] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x0E, ["reg2"] = 0x0C},
-	[0x0A] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0C},
-	[0x0B] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x0C},
-	[0x0C] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x04},
-	[0x0D] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x04},
-	[0x0E] = {["type"] = IN.LD, ["addr_mode"] = 0x05, ["reg1"] = 0x04},
-	[0x0F] = {["type"] = IN.RRCA},
-	[0x10] = {["type"] = IN.STOP},
-	[0x11] = {["type"] = IN.LD, ["addr_mode"] = 0x01, ["reg1"] = 0x0D},
-	[0x12] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0D, ["reg2"] = 0x01},
-	[0x13] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x0D},
-	[0x14] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x05},
-	[0x15] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x05},
-	[0x16] = {["type"] = IN.LD, ["addr_mode"] = 0x05, ["reg1"] = 0x05},
-	[0x17] = {["type"] = IN.RLA},
-	[0x18] = {["type"] = IN.JR, ["addr_mode"] = 0x0F},
-	[0x19] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x0E, ["reg2"] = 0x0D},
-	[0x1A] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0D},
-	[0x1B] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x0D},
-	[0x1C] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x06},
-	[0x1D] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x06},
-	[0x1E] = {["type"] = IN.LD, ["addr_mode"] = 0x05, ["reg1"] = 0x06},
-	[0x1F] = {["type"] = IN.RRA},
-	[0x20] = {["type"] = IN.JR, ["addr_mode"] = 0x0F, ["cnd"] = 0x01},
-	[0x21] = {["type"] = IN.LD, ["addr_mode"] = 0x01, ["reg1"] = 0x0E},
-	[0x22] = {["type"] = IN.LD, ["addr_mode"] = 0x09, ["reg1"] = 0x0E, ["reg2"] = 0x01},
-	[0x23] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
-	[0x24] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x07},
-	[0x25] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x07},
-	[0x26] = {["type"] = IN.LD, ["addr_mode"] = 0x05, ["reg1"] = 0x07},
-	[0x27] = {["type"] = IN.DAA},
-	[0x28] = {["type"] = IN.JR, ["addr_mode"] = 0x0F, ["cnd"] = 0x02},
-	[0x29] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x0E, ["reg2"] = 0x0E},
-	[0x2A] = {["type"] = IN.LD, ["addr_mode"] = 0x07, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0x2B] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
-	[0x2C] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x08},
-	[0x2D] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x08},
-	[0x2E] = {["type"] = IN.LD, ["addr_mode"] = 0x05, ["reg1"] = 0x08},
-	[0x2F] = {["type"] = IN.CPL},
-	[0x30] = {["type"] = IN.JR, ["addr_mode"] = 0x0F, ["cnd"] = 0x03},
-	[0x31] = {["type"] = IN.LD, ["addr_mode"] = 0x01, ["reg1"] = 0x09},
-	[0x32] = {["type"] = IN.LD, ["addr_mode"] = 0x0A, ["reg1"] = 0x0E, ["reg2"] = 0x01},
-	[0x33] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x09},
-	[0x34] = {["type"] = IN.INC, ["addr_mode"] = 0x12, ["reg1"] = 0x0E},
-	[0x35] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
-	[0x36] = {["type"] = IN.LD, ["addr_mode"] = 0x11, ["reg1"] = 0x0E},
-	[0x37] = {["type"] = IN.SCF},
-	[0x38] = {["type"] = IN.JR, ["addr_mode"] = 0x0F, ["cnd"] = 0x04},
-	[0x39] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, 0x0E, 0x09},
-	[0x3A] = {["type"] = IN.LD, ["addr_mode"] = 0x08, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0x3B] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x09},
-	[0x3C] = {["type"] = IN.INC, ["addr_mode"] = 0x04, ["reg1"] = 0x01},
-	[0x3D] = {["type"] = IN.DEC, ["addr_mode"] = 0x04, ["reg1"] = 0x01},
-	[0x3E] = {["type"] = IN.LD, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0x3F] = {["type"] = IN.CCF},
-	[0x40] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x03},
-	[0x41] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x04},
-	[0x42] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x05},
-	[0x43] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x06},
-	[0x44] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x07},
-	[0x45] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x08},
-	[0x46] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x03, ["reg2"] = 0x0E},
-	[0x47] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x01},
-	[0x48] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x03},
-	[0x49] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x04},
-	[0x4A] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x05},
-	[0x4B] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x06},
-	[0x4C] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x07},
-	[0x4D] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x08},
-	[0x4E] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x04, ["reg2"] = 0x0E},
-	[0x4F] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x01},
-	[0x50] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x03},
-	[0x51] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x04},
-	[0x52] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x05},
-	[0x53] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x06},
-	[0x54] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x07},
-	[0x55] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x08},
-	[0x56] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x05, ["reg2"] = 0x0E},
-	[0x57] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x01},
-	[0x58] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x03},
-	[0x59] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x04},
-	[0x5A] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x05},
-	[0x5B] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x06},
-	[0x5C] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x07},
-	[0x5D] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x08},
-	[0x5E] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x06, ["reg2"] = 0x0E},
-	[0x5F] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x01},
-	[0x60] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x03},
-	[0x61] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x04},
-	[0x62] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x05},
-	[0x63] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x06},
-	[0x64] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x07},
-	[0x65] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x08},
-	[0x66] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x07, ["reg2"] = 0x0E},
-	[0x67] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x01},
-	[0x68] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x03},
-	[0x69] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x04},
-	[0x6A] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x05},
-	[0x6B] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x06},
-	[0x6C] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x07},
-	[0x6D] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x08},
-	[0x6E] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x08, ["reg2"] = 0x0E},
-	[0x6F] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x01},
-	[0x70] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x03},
-	[0x71] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x04},
-	[0x72] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x05},
-	[0x73] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x06},
-	[0x74] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x07},
-	[0x75] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x08},
-	[0x76] = {["type"] = IN.HALT},
-	[0x77] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x01},
-	[0x78] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0x79] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0x7A] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0x7B] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0x7C] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0x7D] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0x7E] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0x7F] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
-	[0x80] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0x81] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0x82] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0x83] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0x84] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0x85] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0x86] = {["type"] = IN.ADD, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0x87] = {["type"] = IN.ADD, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
-	[0x88] = {["type"] = IN.ADC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0x89] = {["type"] = IN.ADC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0x8A] = {["type"] = IN.ADC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0x8B] = {["type"] = IN.ADC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0x8C] = {["type"] = IN.ADC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0x8D] = {["type"] = IN.ADC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0x8E] = {["type"] = IN.ADC, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0x8F] = {["type"] = IN.ADC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
-	[0x90] = {["type"] = IN.SUB, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0x91] = {["type"] = IN.SUB, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0x92] = {["type"] = IN.SUB, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0x93] = {["type"] = IN.SUB, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0x94] = {["type"] = IN.SUB, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0x95] = {["type"] = IN.SUB, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0x96] = {["type"] = IN.SUB, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0x97] = {["type"] = IN.SUB, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
-	[0x98] = {["type"] = IN.SBC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0x99] = {["type"] = IN.SBC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0x9A] = {["type"] = IN.SBC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0x9B] = {["type"] = IN.SBC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0x9C] = {["type"] = IN.SBC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0x9D] = {["type"] = IN.SBC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0x9E] = {["type"] = IN.SBC, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0x9F] = {["type"] = IN.SBC, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
-	[0xA0] = {["type"] = IN.AND, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0xA1] = {["type"] = IN.AND, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0xA2] = {["type"] = IN.AND, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0xA3] = {["type"] = IN.AND, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0xA4] = {["type"] = IN.AND, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0xA5] = {["type"] = IN.AND, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0xA6] = {["type"] = IN.AND, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0xA7] = {["type"] = IN.AND, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
-	[0xA8] = {["type"] = IN.XOR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0xA9] = {["type"] = IN.XOR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0xAA] = {["type"] = IN.XOR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0xAB] = {["type"] = IN.XOR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0xAC] = {["type"] = IN.XOR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0xAD] = {["type"] = IN.XOR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0xAE] = {["type"] = IN.XOR, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0xAF] = {["type"] = IN.XOR, ["addr_mode"] = 0x04, ["reg1"] = 0x01},
-	[0xB0] = {["type"] = IN.OR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0xB1] = {["type"] = IN.OR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0xB2] = {["type"] = IN.OR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0xB3] = {["type"] = IN.OR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0xB4] = {["type"] = IN.OR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0xB5] = {["type"] = IN.OR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0xB6] = {["type"] = IN.OR, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0xB7] = {["type"] = IN.OR, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
-	[0xB8] = {["type"] = IN.CP, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
-	[0xB9] = {["type"] = IN.CP, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0xBA] = {["type"] = IN.CP, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
-	[0xBB] = {["type"] = IN.CP, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
-	[0xBC] = {["type"] = IN.CP, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
-	[0xBD] = {["type"] = IN.CP, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
-	[0xBE] = {["type"] = IN.CP, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
-	[0xBF] = {["type"] = IN.CP, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
-	[0xC0] = {["type"] = IN.RET, ["cnd"] = 0x01},
-	[0xC1] = {["type"] = IN.POP, ["addr_mode"] = 0x04, ["reg1"] = 0x0C},
-	[0xC2] = {["type"] = IN.JP, ["addr_mode"] = 0x0E, ["cnd"] = 0x01},
-	[0xC3] = {["type"] = IN.JP, ["addr_mode"] = 0x0E},
-	[0xC4] = {["type"] = IN.CALL, ["addr_mode"] = 0x0E},
-	[0xC5] = {["type"] = IN.PUSH, ["addr_mode"] = 0x04, ["reg1"] = 0x0C},
-	[0xC6] = {["type"] = IN.ADD, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0xC7] = {["type"] = IN.RST, ["param"] = 0x00},
-	[0xC8] = {["type"] = IN.RET, ["cnd"] = 0x02},
-	[0xC9] = {["type"] = IN.RET},
-	[0xCA] = {["type"] = IN.JP, ["addr_mode"] = 0x0E, ["cnd"] = 0x02},
-	[0xCB] = {["type"] = IN.CB, ["addr_mode"] = 0x0F},
-	[0xCC] = {["type"] = IN.CALL, ["addr_mode"] = 0x0E, ["cnd"] = 0x02},
-	[0xCD] = {["type"] = IN.CALL, ["addr_mode"] = 0x0E},
-	[0xCE] = {["type"] = IN.ADC, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0xCF] = {["type"] = IN.RST, ["param"] = 0x08},
-	[0xD0] = {["type"] = IN.RET, 0x03},
-	[0xD1] = {["type"] = IN.POP, ["addr_mode"] = 0x04, ["reg1"] = 0x0D},
-	[0xD2] = {["type"] = IN.JP, ["addr_mode"] = 0x0E, ["cnd"] = 0x03},
-	[0xD4] = {["type"] = IN.CALL, ["addr_mode"] = 0x0E, ["cnd"] = 0x03},
-	[0xD5] = {["type"] = IN.PUSH, ["addr_mode"] = 0x04, ["reg1"] = 0x0D},
-	[0xD6] = {["type"] = IN.SUB, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0xD7] = {["type"] = IN.RST, ["param"] = 0x10},
-	[0xD8] = {["type"] = IN.RET, ["cnd"] = 0x04},
-	[0xD9] = {["type"] = IN.RETI},
-	[0xDA] = {["type"] = IN.JP, ["addr_mode"] = 0x0E, ["cnd"] = 0x04},
-	[0xDC] = {["type"] = IN.CALL, ["addr_mode"] = 0x0E, ["cnd"] = 0x04},
-	[0xDE] = {["type"] = IN.SBC, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0xDF] = {["type"] = IN.RST, ["param"] = 0x18},
-	[0xE0] = {["type"] = IN.LDH, ["addr_mode"] = 0x0C, ["reg2"] = 0x01},
-	[0xE1] = {["type"] = IN.POP, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
-	[0xE2] = {["type"] = IN.LD, ["addr_mode"] = 0x03, ["reg1"] = 0x04, ["reg2"] = 0x01},
-	[0xE5] = {["type"] = IN.PUSH, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
-	[0xE6] = {["type"] = IN.AND, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0xE7] = {["type"] = IN.RST, ["param"] = 0x20},
-	[0xE8] = {["type"] = IN.ADD, ["addr_mode"] = 0x05, ["reg1"] = 0x09},
-	[0xE9] = {["type"] = IN.JP, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
-	[0xEA] = {["type"] = IN.LD, ["addr_mode"] = 0x13, ["reg2"] = 0x01},
-	[0xEE] = {["type"] = IN.XOR, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0xEF] = {["type"] = IN.RST, ["param"] = 0x28},
-	[0xF0] = {["type"] = IN.LDH, ["addr_mode"] = 0x0B, ["reg1"] = 0x01},
-	[0xF1] = {["type"] = IN.POP, ["addr_mode"] = 0x04, ["reg1"] = 0x0B},
-	[0xF2] = {["type"] = IN.LD, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x04},
-	[0xF3] = {["type"] = IN.DI},
-	[0xF5] = {["type"] = IN.PUSH, ["addr_mode"] = 0x04, ["reg1"] = 0x0B},
-	[0xF6] = {["type"] = IN.OR, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0xF7] = {["type"] = IN.RST, ["param"] = 0x30},
-	[0xF8] = {["type"] = IN.LD, ["addr_mode"] = 0x0D, ["reg1"] = 0x0E, ["reg2"] = 0x09},
-	[0xF9] = {["type"] = IN.LD, ["addr_mode"] = 0x02, ["reg1"] = 0x09, ["reg2"] = 0x0E},
-	[0xFA] = {["type"] = IN.LD, ["addr_mode"] = 0x14, ["reg1"] = 0x01},
-	[0xFB] = {["type"] = IN.EI},
-	[0xFE] = {["type"] = IN.CP, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
-	[0xFF] = {["type"] = IN.RST, ["param"] = 0x38}
+	[0x00] = {["type"] = 0x01},
+	[0x01] = {["type"] = 0x02, ["addr_mode"] = 0x01, ["reg1"] = 0x0C},
+	[0x02] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0C, ["reg2"] = 0x01},
+	[0x03] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x0C},
+	[0x04] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x03},
+	[0x05] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x03},
+	[0x06] = {["type"] = 0x02, ["addr_mode"] = 0x05, ["reg1"] = 0x03},
+	[0x07] = {["type"] = 0x05},
+	[0x08] = {["type"] = 0x02, ["addr_mode"] = 0x13, ["reg2"] = 0x09},
+	[0x09] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x0E, ["reg2"] = 0x0C},
+	[0x0A] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0C},
+	[0x0B] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x0C},
+	[0x0C] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x04},
+	[0x0D] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x04},
+	[0x0E] = {["type"] = 0x02, ["addr_mode"] = 0x05, ["reg1"] = 0x04},
+	[0x0F] = {["type"] = 0x07},
+	[0x10] = {["type"] = 0x08},
+	[0x11] = {["type"] = 0x02, ["addr_mode"] = 0x01, ["reg1"] = 0x0D},
+	[0x12] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0D, ["reg2"] = 0x01},
+	[0x13] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x0D},
+	[0x14] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x05},
+	[0x15] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x05},
+	[0x16] = {["type"] = 0x02, ["addr_mode"] = 0x05, ["reg1"] = 0x05},
+	[0x17] = {["type"] = 0x09},
+	[0x18] = {["type"] = 0x0A, ["addr_mode"] = 0x0F},
+	[0x19] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x0E, ["reg2"] = 0x0D},
+	[0x1A] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0D},
+	[0x1B] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x0D},
+	[0x1C] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x06},
+	[0x1D] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x06},
+	[0x1E] = {["type"] = 0x02, ["addr_mode"] = 0x05, ["reg1"] = 0x06},
+	[0x1F] = {["type"] = 0x0B},
+	[0x20] = {["type"] = 0x0A, ["addr_mode"] = 0x0F, ["cnd"] = 0x01},
+	[0x21] = {["type"] = 0x02, ["addr_mode"] = 0x01, ["reg1"] = 0x0E},
+	[0x22] = {["type"] = 0x02, ["addr_mode"] = 0x09, ["reg1"] = 0x0E, ["reg2"] = 0x01},
+	[0x23] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
+	[0x24] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x07},
+	[0x25] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x07},
+	[0x26] = {["type"] = 0x02, ["addr_mode"] = 0x05, ["reg1"] = 0x07},
+	[0x27] = {["type"] = 0x0C},
+	[0x28] = {["type"] = 0x0A, ["addr_mode"] = 0x0F, ["cnd"] = 0x02},
+	[0x29] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x0E, ["reg2"] = 0x0E},
+	[0x2A] = {["type"] = 0x02, ["addr_mode"] = 0x07, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0x2B] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
+	[0x2C] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x08},
+	[0x2D] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x08},
+	[0x2E] = {["type"] = 0x02, ["addr_mode"] = 0x05, ["reg1"] = 0x08},
+	[0x2F] = {["type"] = 0x0D},
+	[0x30] = {["type"] = 0x0A, ["addr_mode"] = 0x0F, ["cnd"] = 0x03},
+	[0x31] = {["type"] = 0x02, ["addr_mode"] = 0x01, ["reg1"] = 0x09},
+	[0x32] = {["type"] = 0x02, ["addr_mode"] = 0x0A, ["reg1"] = 0x0E, ["reg2"] = 0x01},
+	[0x33] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x09},
+	[0x34] = {["type"] = 0x03, ["addr_mode"] = 0x12, ["reg1"] = 0x0E},
+	[0x35] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
+	[0x36] = {["type"] = 0x02, ["addr_mode"] = 0x11, ["reg1"] = 0x0E},
+	[0x37] = {["type"] = 0x0E},
+	[0x38] = {["type"] = 0x0A, ["addr_mode"] = 0x0F, ["cnd"] = 0x04},
+	[0x39] = {["type"] = 0x06, ["addr_mode"] = 0x02, 0x0E, 0x09},
+	[0x3A] = {["type"] = 0x02, ["addr_mode"] = 0x08, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0x3B] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x09},
+	[0x3C] = {["type"] = 0x03, ["addr_mode"] = 0x04, ["reg1"] = 0x01},
+	[0x3D] = {["type"] = 0x04, ["addr_mode"] = 0x04, ["reg1"] = 0x01},
+	[0x3E] = {["type"] = 0x02, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0x3F] = {["type"] = 0x0F},
+	[0x40] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x03},
+	[0x41] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x04},
+	[0x42] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x05},
+	[0x43] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x06},
+	[0x44] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x07},
+	[0x45] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x08},
+	[0x46] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x03, ["reg2"] = 0x0E},
+	[0x47] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x03, ["reg2"] = 0x01},
+	[0x48] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x03},
+	[0x49] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x04},
+	[0x4A] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x05},
+	[0x4B] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x06},
+	[0x4C] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x07},
+	[0x4D] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x08},
+	[0x4E] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x04, ["reg2"] = 0x0E},
+	[0x4F] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x04, ["reg2"] = 0x01},
+	[0x50] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x03},
+	[0x51] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x04},
+	[0x52] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x05},
+	[0x53] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x06},
+	[0x54] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x07},
+	[0x55] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x08},
+	[0x56] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x05, ["reg2"] = 0x0E},
+	[0x57] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x05, ["reg2"] = 0x01},
+	[0x58] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x03},
+	[0x59] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x04},
+	[0x5A] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x05},
+	[0x5B] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x06},
+	[0x5C] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x07},
+	[0x5D] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x08},
+	[0x5E] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x06, ["reg2"] = 0x0E},
+	[0x5F] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x06, ["reg2"] = 0x01},
+	[0x60] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x03},
+	[0x61] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x04},
+	[0x62] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x05},
+	[0x63] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x06},
+	[0x64] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x07},
+	[0x65] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x08},
+	[0x66] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x07, ["reg2"] = 0x0E},
+	[0x67] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x07, ["reg2"] = 0x01},
+	[0x68] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x03},
+	[0x69] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x04},
+	[0x6A] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x05},
+	[0x6B] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x06},
+	[0x6C] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x07},
+	[0x6D] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x08},
+	[0x6E] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x08, ["reg2"] = 0x0E},
+	[0x6F] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x08, ["reg2"] = 0x01},
+	[0x70] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x03},
+	[0x71] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x04},
+	[0x72] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x05},
+	[0x73] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x06},
+	[0x74] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x07},
+	[0x75] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x08},
+	[0x76] = {["type"] = 0x10},
+	[0x77] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x0E, ["reg2"] = 0x01},
+	[0x78] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0x79] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0x7A] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0x7B] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0x7C] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0x7D] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0x7E] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0x7F] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
+	[0x80] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0x81] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0x82] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0x83] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0x84] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0x85] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0x86] = {["type"] = 0x06, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0x87] = {["type"] = 0x06, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
+	[0x88] = {["type"] = 0x11, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0x89] = {["type"] = 0x11, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0x8A] = {["type"] = 0x11, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0x8B] = {["type"] = 0x11, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0x8C] = {["type"] = 0x11, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0x8D] = {["type"] = 0x11, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0x8E] = {["type"] = 0x11, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0x8F] = {["type"] = 0x11, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
+	[0x90] = {["type"] = 0x12, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0x91] = {["type"] = 0x12, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0x92] = {["type"] = 0x12, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0x93] = {["type"] = 0x12, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0x94] = {["type"] = 0x12, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0x95] = {["type"] = 0x12, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0x96] = {["type"] = 0x12, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0x97] = {["type"] = 0x12, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
+	[0x98] = {["type"] = 0x13, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0x99] = {["type"] = 0x13, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0x9A] = {["type"] = 0x13, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0x9B] = {["type"] = 0x13, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0x9C] = {["type"] = 0x13, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0x9D] = {["type"] = 0x13, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0x9E] = {["type"] = 0x13, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0x9F] = {["type"] = 0x13, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
+	[0xA0] = {["type"] = 0x14, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0xA1] = {["type"] = 0x14, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0xA2] = {["type"] = 0x14, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0xA3] = {["type"] = 0x14, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0xA4] = {["type"] = 0x14, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0xA5] = {["type"] = 0x14, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0xA6] = {["type"] = 0x14, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0xA7] = {["type"] = 0x14, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
+	[0xA8] = {["type"] = 0x15, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0xA9] = {["type"] = 0x15, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0xAA] = {["type"] = 0x15, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0xAB] = {["type"] = 0x15, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0xAC] = {["type"] = 0x15, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0xAD] = {["type"] = 0x15, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0xAE] = {["type"] = 0x15, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0xAF] = {["type"] = 0x15, ["addr_mode"] = 0x04, ["reg1"] = 0x01},
+	[0xB0] = {["type"] = 0x16, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0xB1] = {["type"] = 0x16, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0xB2] = {["type"] = 0x16, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0xB3] = {["type"] = 0x16, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0xB4] = {["type"] = 0x16, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0xB5] = {["type"] = 0x16, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0xB6] = {["type"] = 0x16, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0xB7] = {["type"] = 0x16, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
+	[0xB8] = {["type"] = 0x17, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x03},
+	[0xB9] = {["type"] = 0x17, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0xBA] = {["type"] = 0x17, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x05},
+	[0xBB] = {["type"] = 0x17, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x06},
+	[0xBC] = {["type"] = 0x17, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x07},
+	[0xBD] = {["type"] = 0x17, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x08},
+	[0xBE] = {["type"] = 0x17, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x0E},
+	[0xBF] = {["type"] = 0x17, ["addr_mode"] = 0x02, ["reg1"] = 0x01, ["reg2"] = 0x01},
+	[0xC0] = {["type"] = 0x1B, ["cnd"] = 0x01},
+	[0xC1] = {["type"] = 0x18, ["addr_mode"] = 0x04, ["reg1"] = 0x0C},
+	[0xC2] = {["type"] = 0x19, ["addr_mode"] = 0x0E, ["cnd"] = 0x01},
+	[0xC3] = {["type"] = 0x19, ["addr_mode"] = 0x0E},
+	[0xC4] = {["type"] = 0x1D, ["addr_mode"] = 0x0E},
+	[0xC5] = {["type"] = 0x1A, ["addr_mode"] = 0x04, ["reg1"] = 0x0C},
+	[0xC6] = {["type"] = 0x06, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0xC7] = {["type"] = 0x23, ["param"] = 0x00},
+	[0xC8] = {["type"] = 0x1B, ["cnd"] = 0x02},
+	[0xC9] = {["type"] = 0x1B},
+	[0xCA] = {["type"] = 0x19, ["addr_mode"] = 0x0E, ["cnd"] = 0x02},
+	[0xCB] = {["type"] = 0x1C, ["addr_mode"] = 0x0F},
+	[0xCC] = {["type"] = 0x1D, ["addr_mode"] = 0x0E, ["cnd"] = 0x02},
+	[0xCD] = {["type"] = 0x1D, ["addr_mode"] = 0x0E},
+	[0xCE] = {["type"] = 0x11, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0xCF] = {["type"] = 0x23, ["param"] = 0x08},
+	[0xD0] = {["type"] = 0x1B, 0x03},
+	[0xD1] = {["type"] = 0x18, ["addr_mode"] = 0x04, ["reg1"] = 0x0D},
+	[0xD2] = {["type"] = 0x19, ["addr_mode"] = 0x0E, ["cnd"] = 0x03},
+	[0xD4] = {["type"] = 0x1D, ["addr_mode"] = 0x0E, ["cnd"] = 0x03},
+	[0xD5] = {["type"] = 0x1A, ["addr_mode"] = 0x04, ["reg1"] = 0x0D},
+	[0xD6] = {["type"] = 0x12, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0xD7] = {["type"] = 0x23, ["param"] = 0x10},
+	[0xD8] = {["type"] = 0x1B, ["cnd"] = 0x04},
+	[0xD9] = {["type"] = 0x1E},
+	[0xDA] = {["type"] = 0x19, ["addr_mode"] = 0x0E, ["cnd"] = 0x04},
+	[0xDC] = {["type"] = 0x1D, ["addr_mode"] = 0x0E, ["cnd"] = 0x04},
+	[0xDE] = {["type"] = 0x13, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0xDF] = {["type"] = 0x23, ["param"] = 0x18},
+	[0xE0] = {["type"] = 0x1F, ["addr_mode"] = 0x0C, ["reg2"] = 0x01},
+	[0xE1] = {["type"] = 0x18, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
+	[0xE2] = {["type"] = 0x02, ["addr_mode"] = 0x03, ["reg1"] = 0x04, ["reg2"] = 0x01},
+	[0xE5] = {["type"] = 0x1A, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
+	[0xE6] = {["type"] = 0x14, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0xE7] = {["type"] = 0x23, ["param"] = 0x20},
+	[0xE8] = {["type"] = 0x06, ["addr_mode"] = 0x05, ["reg1"] = 0x09},
+	[0xE9] = {["type"] = 0x19, ["addr_mode"] = 0x04, ["reg1"] = 0x0E},
+	[0xEA] = {["type"] = 0x02, ["addr_mode"] = 0x13, ["reg2"] = 0x01},
+	[0xEE] = {["type"] = 0x15, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0xEF] = {["type"] = 0x23, ["param"] = 0x28},
+	[0xF0] = {["type"] = 0x1F, ["addr_mode"] = 0x0B, ["reg1"] = 0x01},
+	[0xF1] = {["type"] = 0x18, ["addr_mode"] = 0x04, ["reg1"] = 0x0B},
+	[0xF2] = {["type"] = 0x02, ["addr_mode"] = 0x06, ["reg1"] = 0x01, ["reg2"] = 0x04},
+	[0xF3] = {["type"] = 0x21},
+	[0xF5] = {["type"] = 0x1A, ["addr_mode"] = 0x04, ["reg1"] = 0x0B},
+	[0xF6] = {["type"] = 0x16, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0xF7] = {["type"] = 0x23, ["param"] = 0x30},
+	[0xF8] = {["type"] = 0x02, ["addr_mode"] = 0x0D, ["reg1"] = 0x0E, ["reg2"] = 0x09},
+	[0xF9] = {["type"] = 0x02, ["addr_mode"] = 0x02, ["reg1"] = 0x09, ["reg2"] = 0x0E},
+	[0xFA] = {["type"] = 0x02, ["addr_mode"] = 0x14, ["reg1"] = 0x01},
+	[0xFB] = {["type"] = 0x22},
+	[0xFE] = {["type"] = 0x17, ["addr_mode"] = 0x05, ["reg1"] = 0x01},
+	[0xFF] = {["type"] = 0x23, ["param"] = 0x38}
 }
 
 -- CPU state
@@ -590,8 +588,8 @@ end
 -- CPU instr execution functions
 local function cpu_exec_instr()
 	local instr = cpu_instr.type
-	if instr == IN.NOP then
-	elseif instr == IN.LD then
+	if instr == 0x01 then -- IN_NOP
+	elseif instr == 0x02 then -- IN_LD
 		if cpu_use_mem_dest then
 			if cpu_instr.reg2 and cpu_instr.reg2 >= 0x09 then
 				emu_incr_cycles(1)
@@ -611,21 +609,21 @@ local function cpu_exec_instr()
 		else
 			cpu_write_reg(cpu_instr.reg1, cpu_fetched_data)
 		end
-	elseif instr == IN.LDH then
+	elseif instr == 0x1F then -- IN_LDH
 		if cpu_instr.reg1 == 0x01 then
 			cpu_write_reg(cpu_instr.reg1, bus_read(bor(0xFF00, cpu_fetched_data)))
 		else
 			bus_write(bor(0xFF00, cpu_fetched_data), A)
 		end
 		emu_incr_cycles(1)
-	elseif instr == IN.DI then
+	elseif instr == 0x21 then -- IN_DI
 		cpu_master_interrupts = false
-	elseif instr == IN.EI then
+	elseif instr == 0x22 then -- IN_EI
 		cpu_enable_interrupts = true
-	elseif instr == IN.XOR then
+	elseif instr == 0x15 then -- IN_XOR
 		A = bxor(A, cpu_fetched_data % 0x100)
 		cpu_set_flags((A == 0) and 1 or 0, 0, 0, 0)
-	elseif instr == IN.POP then
+	elseif instr == 0x18 then -- IN_POP
 		local low = stack_pop()
 		emu_incr_cycles(1)
 		local high = stack_pop()
@@ -638,7 +636,7 @@ local function cpu_exec_instr()
 		else
 			cpu_write_reg(cpu_instr.reg1, val)
 		end
-	elseif instr == IN.PUSH then
+	elseif instr == 0x1A then -- IN_PUSH
 		local high = rshift(cpu_read_reg(cpu_instr.reg1), 8) % 0x100
 		emu_incr_cycles(1)
 		stack_push(high)
@@ -646,20 +644,20 @@ local function cpu_exec_instr()
 		emu_incr_cycles(1)
 		stack_push(low)
 		emu_incr_cycles(1)
-	elseif instr == IN.CALL then
+	elseif instr == 0x1D then -- IN_CALL
 		cpu_goto(cpu_fetched_data, true)
-	elseif instr == IN.JP then
+	elseif instr == 0x19 then -- IN_JP
 		cpu_goto(cpu_fetched_data, false)
-	elseif instr == IN.JR then
+	elseif instr == 0x0A then -- IN_JR
 		local rel = cpu_fetched_data % 0x100
 		if rel > 0x7F then
 			rel = rel - 0x100
 		end
 		local addr = PC + rel
 		cpu_goto(addr, false)
-	elseif instr == IN.RST then
+	elseif instr == 0x23 then -- IN_RST
 		cpu_goto(cpu_instr.param, true)
-	elseif instr == IN.RET then
+	elseif instr == 0x1B then -- IN_RET
 		if cpu_instr.cnd then
 			emu_incr_cycles(1)
 		end
@@ -673,7 +671,7 @@ local function cpu_exec_instr()
 			PC = val
 			emu_incr_cycles(1)
 		end
-	elseif instr == IN.RETI then
+	elseif instr == 0x1E then -- IN_RETI
 		cpu_master_interrupts = true
 		if cpu_instr.cnd then
 			emu_incr_cycles(1)
@@ -688,7 +686,7 @@ local function cpu_exec_instr()
 			PC = val
 			emu_incr_cycles(1)
 		end
-	elseif instr == IN.INC then
+	elseif instr == 0x03 then -- IN_INC
 		local val
 		if cpu_instr.reg1 >= 0x09 then
 			emu_incr_cycles(1)
@@ -707,7 +705,7 @@ local function cpu_exec_instr()
 		if (cpu_opcode % 0x04) ~= 0x03 then
 			cpu_set_flags((val == 0) and 1 or 0, 0, ((val % 0x10) == 0x00) and 1 or 0, -1)
 		end
-	elseif instr == IN.DEC then
+	elseif instr == 0x04 then -- IN_DEC
 		local val
 		if cpu_instr.reg1 >= 0x09 then
 			emu_incr_cycles(1)
@@ -736,7 +734,7 @@ local function cpu_exec_instr()
 		if band(cpu_opcode, 0x0B) ~= 0x0B then
 			cpu_set_flags((val == 0) and 1 or 0, 1, ((val % 0x10) == 0x0F) and 1 or 0, -1)
 		end
-	elseif instr == IN.ADD then
+	elseif instr == 0x06 then -- IN_ADD
 		local val
 		if cpu_instr.reg1 >= 0x09 then
 			emu_incr_cycles(1)
@@ -769,7 +767,7 @@ local function cpu_exec_instr()
 		end
 		cpu_write_reg(cpu_instr.reg1, val % 0x10000)
 		cpu_set_flags(z, 0, h, c)
-	elseif instr == IN.SUB then
+	elseif instr == 0x12 then -- IN_SUB
 		local r1 = cpu_read_reg(cpu_instr.reg1)
 		local val = (r1 - cpu_fetched_data) % 0x10000
 		local z = (val == 0) and 1 or 0
@@ -777,11 +775,11 @@ local function cpu_exec_instr()
 		local c = ((cpu_read_reg(cpu_instr.reg1) - cpu_fetched_data) == 0) and 1 or 0
 		cpu_write_reg(cpu_instr.reg1, val)
 		cpu_set_flags(z, 1, h, c)
-	elseif instr == IN.ADC then
+	elseif instr == 0x11 then -- IN_ADC
 		local c = band(F, 0x10)
 		A = (A + cpu_fetched_data + c) % 0x100
 		cpu_set_flags((A == 0) and 1 or 0, 0, (((A % 0x10) + (cpu_fetched_data % 0x10) + c) > 0x0F) and 1 or 0, (A + cpu_fetched_data + c > 0xFF) and 1 or 0)
-	elseif instr == IN.SBC then
+	elseif instr == 0x13 then -- IN_SBC
 		local _c = band(F, 0x10)
 		local val = cpu_fetched_data + _c
 		local r1 = cpu_read_reg(cpu_instr.reg1)
@@ -790,14 +788,14 @@ local function cpu_exec_instr()
 		local c = ((r1 - cpu_fetched_data - _c) < 0) and 1 or 0
 		cpu_write_reg(cpu_instr.reg1, r1 - val)
 		cpu_set_flags(z, 1, h, c)
-	elseif instr == IN.OR then
+	elseif instr == 0x16 then -- IN_OR
 		A = bor(A, cpu_fetched_data % 0x100)
 		cpu_set_flags((A == 0) and 1 or 0, 0, 0, 0)
-	elseif instr == IN.CP then
+	elseif instr == 0x17 then -- IN_CP
 		local val = A - cpu_fetched_data
 		local val2 = (A % 0x10) - (cpu_fetched_data % 0x10)
 		cpu_set_flags((val == 0) and 1 or 0, 1, (val2 < 0) and 1 or 0, (val < 0) and 1 or 0);
-	elseif instr == IN.CB then
+	elseif instr == 0x1C then -- IN_CB
 		local op = cpu_fetched_data
 		local reg = rt_lookup[op % 0x08]
 		local bit = rshift(op, 3) % 0x08
@@ -899,28 +897,28 @@ local function cpu_exec_instr()
 			end
 			cpu_set_flags((reg_val == 0) and 1 or 0, 0, 0, band(old, 1) and 1 or 0)
 		end
-	elseif instr == IN.AND then
+	elseif instr == 0x14 then -- IN_AND
 		A = band(A, cpu_fetched_data % 0x100)
 		cpu_set_flags((A == 0) and 1 or 0, 0, 1, 0)
-	elseif instr == IN.RLCA then
+	elseif instr == 0x05 then -- IN_RLCA
 		local c = band(rshift(A, 7), 1)
 		A = bor(lshift(A, 1), c)
 		cpu_set_flags(0, 0, 0, c)
-	elseif instr == IN.RRCA then
+	elseif instr == 0x07 then -- IN_RRCA
 		local c = band(A, 1)
 		A = bor(rshift(A, 1), lshift(c, 7))
 		cpu_set_flags(0, 0, 0, c)
-	elseif instr == IN.RLA then
+	elseif instr == 0x09 then -- IN_RLA
 		local c = band(rshift(A, 7), 1)
 		A = bor(lshift(A, 1), (band(F, 0x10) == 0x10) and 1 or 0)
 		cpu_set_flags(0, 0, 0, c)
-	elseif instr == IN.RRA then
+	elseif instr == 0x0B then -- IN_RRA
 		local c = band(A, 1)
 		A = bor(rshift(A, 1), rshift((band(F, 0x10) == 0x10) and 1 or 0, 7))
 		cpu_set_flags(0, 0, 0, c)
-	elseif instr == IN.STOP then
+	elseif instr == 0x08 then -- IN_STOP
 		System.consolePrint("IN_STOP: NOIMPL")
-	elseif instr == IN.DAA then
+	elseif instr == 0x0C then -- IN_DAA
 		local u = 0
 		local fc = 0
 		local has_h = band(F, 0x20) == 0x20
@@ -939,55 +937,55 @@ local function cpu_exec_instr()
 			A = (A + u) % 0x100
 		end
 		cpu_set_flags((A == 0) and 1 or 0, -1, 0, fc)
-	elseif instr == IN.CPL then
+	elseif instr == 0x0D then -- IN_CPL
 		A = bnot(A)
 		cpu_set_flags(-1, 1, 1, -1)
-	elseif instr == IN.SCF then
+	elseif instr == 0x0E then -- IN_SCF
 		cpu_set_flags(-1, 0, 0, 1)
-	elseif instr == IN.CCF then
+	elseif instr == 0x0F then -- IN_CCF
 		cpu_set_flags(-1, 0, 0, bxor((band(F, 0x10) == 0x10) and 1 or 0, 1))
-	elseif instr == IN.HALT then
+	elseif instr == 0x10 then -- IN_HALT
 		cpu_halted = true
 	end
 end
 
 -- Instructions logging function
 local cpu_name_funcs = {
-	[IN.NOP] = "NOP",
-	[IN.LD] = "LD",
-	[IN.LDH] = "LDH",
-	[IN.JP] = "JP",
-	[IN.DI] = "DI",
-	[IN.EI] = "EI",
-	[IN.XOR] = "XOR",
-	[IN.POP] = "POP",
-	[IN.PUSH] = "PUSH",
-	[IN.CALL] = "CALL",
-	[IN.JP] = "JP",
-	[IN.JR] = "JR",
-	[IN.RST] = "RST",
-	[IN.RET] = "RET",
-	[IN.RETI] = "RETI",
-	[IN.INC] = "INC",
-	[IN.DEC] = "DEC",
-	[IN.ADD] = "ADD",
-	[IN.SUB] = "SUB",
-	[IN.ADC] = "ADC",
-	[IN.SBC] = "SBC",
-	[IN.OR] = "OR",
-	[IN.CP] = "CP",
-	[IN.CB] = "CB",
-	[IN.AND] = "AND",
-	[IN.RLCA] = "RLCA",
-	[IN.RRCA] = "RRCA",
-	[IN.RLA] = "RLA",
-	[IN.RRA] = "RRA",
-	[IN.STOP] = "STOP",
-	[IN.DAA] = "DAA",
-	[IN.CPL] = "CPL",
-	[IN.SCF] = "SCF",
-	[IN.CCF] = "CCF",
-	[IN.HALT] = "HALT",
+	[0x01] = "NOP",
+	[0x02] = "LD",
+	[0x1F] = "LDH",
+	[0x19] = "JP",
+	[0x21] = "DI",
+	[0x22] = "EI",
+	[0x15] = "XOR",
+	[0x18] = "POP",
+	[0x1A] = "PUSH",
+	[0x1D] = "CALL",
+	[0x19] = "JP",
+	[0x0A] = "JR",
+	[0x23] = "RST",
+	[0x1B] = "RET",
+	[0x1E] = "RETI",
+	[0x03] = "INC",
+	[0x04] = "DEC",
+	[0x06] = "ADD",
+	[0x12] = "SUB",
+	[0x11] = "ADC",
+	[0x13] = "SBC",
+	[0x16] = "OR",
+	[0x17] = "CP",
+	[0x1C] = "CB",
+	[0x14] = "AND",
+	[0x05] = "RLCA",
+	[0x07] = "RRCA",
+	[0x09] = "RLA",
+	[0x0B] = "RRA",
+	[0x08] = "STOP",
+	[0x0C] = "DAA",
+	[0x0D] = "CPL",
+	[0x0E] = "SCF",
+	[0x0F] = "CCF",
+	[0x10] = "HALT",
 }
 local function cpu_stringify_instr()
 	local addr_mode = cpu_instr.addr_mode
@@ -1038,59 +1036,78 @@ local serial_out = ""
 local function cpu_fetch_data()
 	local addr_mode = cpu_instr.addr_mode
 	if addr_mode then
-		if addr_mode == 0x04 then
+		if addr_mode == 0x04 then -- AM_R
 			cpu_fetched_data = cpu_read_reg(cpu_instr.reg1)
-		elseif addr_mode == 0x02 then
+		elseif addr_mode == 0x02 then -- AM_R_R
 			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
-		elseif addr_mode == 0x05 or addr_mode == 0x0D or addr_mode == 0x0F or addr_mode == 0x0B then
+		elseif addr_mode == 0x05 then -- AM_R_D8
 			cpu_fetched_data = bus_read(PC)
 			emu_incr_cycles(1)
 			PC = PC + 1
-		elseif addr_mode == 0x0E or addr_mode == 0x01 then
+		elseif addr_mode == 0x0D then -- AM_HL_SPR
+			cpu_fetched_data = bus_read(PC)
+			emu_incr_cycles(1)
+			PC = PC + 1
+		elseif addr_mode == 0x0F then -- AM_D8
+			cpu_fetched_data = bus_read(PC)
+			emu_incr_cycles(1)
+			PC = PC + 1
+		elseif addr_mode == 0x0B then -- AM_R_A8
+			cpu_fetched_data = bus_read(PC)
+			emu_incr_cycles(1)
+			PC = PC + 1
+		elseif addr_mode == 0x0E then -- AM_D16
 			local low = bus_read(PC)
 			emu_incr_cycles(1)
 			local high = bus_read(PC + 1)
 			emu_incr_cycles(1)
 			cpu_fetched_data = bor(low, lshift(high, 8))
 			PC = PC + 2
-		elseif addr_mode == 0x03 then
+		elseif addr_mode == 0x01 then -- AM_R_D16
+			local low = bus_read(PC)
+			emu_incr_cycles(1)
+			local high = bus_read(PC + 1)
+			emu_incr_cycles(1)
+			cpu_fetched_data = bor(low, lshift(high, 8))
+			PC = PC + 2
+		elseif addr_mode == 0x03 then -- AM_MR_R
 			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
 			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
 			cpu_use_mem_dest = true
 			if cpu_instr.reg1 == 0x04 then
 				cpu_mem_dest = bor(cpu_mem_dest, 0xFF00)
 			end
-		elseif addr_mode == 0x06 then
+		elseif addr_mode == 0x06 then -- AM_R_MR
 			local addr = cpu_read_reg(cpu_instr.reg2)
 			if cpu_instr.reg2 == 0x04 then
 				addr = bor(addr, 0xFF00)
 			end
 			cpu_fetched_data = bus_read(addr)
 			emu_incr_cycles(1)
-		elseif addr_mode == 0x07 then
+		elseif addr_mode == 0x07 then -- AM_R_HLI
 			cpu_fetched_data = bus_read(cpu_read_reg(cpu_instr.reg2))
 			emu_incr_cycles(1)
 			cpu_write_reg(0x0E, cpu_read_reg(0x0E) + 1)
-		elseif addr_mode == 0x08 then
+		elseif addr_mode == 0x08 then -- AM_R_HLD
 			cpu_fetched_data = bus_read(cpu_read_reg(cpu_instr.reg2))
 			emu_incr_cycles(1)
 			cpu_write_reg(0x0E, cpu_read_reg(0x0E) - 1)
-		elseif addr_mode == 0x09 then
+		elseif addr_mode == 0x09 then -- AM_HLI_R
 			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
 			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
 			cpu_use_mem_dest = true
 			cpu_write_reg(0x0E, cpu_read_reg(0x0E) + 1)
-		elseif addr_mode == 0x0A then
+		elseif addr_mode == 0x0A then -- AM_HLD_R
 			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
 			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
 			cpu_use_mem_dest = true
 			cpu_write_reg(0x0E, cpu_read_reg(0x0E) - 1)
-		elseif addr_mode == 0x0C then
+		elseif addr_mode == 0x0C then -- AM_A8_R
 			cpu_mem_dest = bor(bus_read(PC), 0xFF00)
 			cpu_use_mem_dest = true
 			emu_incr_cycles(1)
 			PC = PC + 1
-		elseif addr_mode == 0x13 or addr_mode == 0x10 then
+		elseif addr_mode == 0x13 then -- AM_A16_R
 			local low = bus_read(PC)
 			emu_incr_cycles(1)
 			local high = bus_read(PC + 1)
@@ -1099,18 +1116,27 @@ local function cpu_fetch_data()
 			cpu_use_mem_dest = true
 			PC = PC + 2
 			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
-		elseif addr_mode == 0x11 then
+		elseif addr_mode == 0x10 then -- AM_D16_R
+			local low = bus_read(PC)
+			emu_incr_cycles(1)
+			local high = bus_read(PC + 1)
+			emu_incr_cycles(1)
+			cpu_mem_dest = bor(low, lshift(high, 8))
+			cpu_use_mem_dest = true
+			PC = PC + 2
+			cpu_fetched_data = cpu_read_reg(cpu_instr.reg2)
+		elseif addr_mode == 0x11 then -- AM_MR_D8
 			cpu_fetched_data = bus_read(PC)
 			emu_incr_cycles(1)
 			PC = PC + 1
 			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
 			cpu_use_mem_dest = true
-		elseif addr_mode == 0x12 then
+		elseif addr_mode == 0x12 then -- AM_MR
 			cpu_mem_dest = cpu_read_reg(cpu_instr.reg1)
 			cpu_use_mem_dest = true
 			cpu_fetched_data = bus_read(cpu_mem_dest)
 			emu_incr_cycles(1)
-		elseif addr_mode == 0x14 then
+		elseif addr_mode == 0x14 then -- AM_R_A16
 			local low = bus_read(PC)
 			emu_incr_cycles(1)
 			local high = bus_read(PC + 1)
