@@ -1,8 +1,3 @@
-local ppu_oam_ram = {}
-local ppu_vram = {}
-local ppu_colors = {0xFFFFFFFF, 0xAAAAAAFF, 0x555555FF, 0x000000FF}
-ppu_dbg_tex = nil
-
 -- Indices for LCD struct
 -- LCD_LCDC     = 0
 -- LCD_LCDS     = 1
@@ -17,15 +12,45 @@ ppu_dbg_tex = nil
 -- LCD_WIN_Y    = 10
 -- LCD_WIN_X    = 11
 
+-- LCDS modes
+-- MODE_HBLANK = 0
+-- MODE_VBLANK = 1
+-- MODE_OAM    = 2
+-- MODE_XFER   = 3
+
+-- LCDS stat modes
+-- SS_HBLANK = 0x08
+-- SS_VBLANK = 0x10
+-- SS_OAM = 0x20
+-- SS_LYC = 0x40
+
+-- Localized commonly used functions
+local bor = bit32.bor
+local band = bit32.band
+local rshift = bit32.rshift
+local lshift = bit32.lshift
+local bnot = bit32.bnot
+local drawPixel = Graphics.drawPixel
+
+-- PPU state
+local ppu_oam_ram = {}
+local ppu_vram = {}
+local ppu_colors = {0xFFFFFFFF, 0xAAAAAAFF, 0x555555FF, 0x000000FF}
+local ppu_lines = 0
+local ppu_dbg_tex = nil
+local screen_tex = nil
+ppu_cur_frame = 0
+
+-- LCD state
 local lcd_regs = {}
 local bg_cols = {}
 local sp1_cols = {}
 local sp2_cols = {}
 
-local bor = bit32.bor
-local band = bit32.band
-local rshift = bit32.rshift
-local lshift = bit32.lshift
+local function lcd_set_mode(mode)
+	lcd_regs[1] = band(lcd_regs[1], bnot(0x03))
+	lcd_regs[1] = bor(lcd_regs[1], mode)
+end
 
 local function ppu_update_dbg_tile(num, x, y)
 	for tile_y = 0, 15, 2 do
@@ -36,12 +61,12 @@ local function ppu_update_dbg_tile(num, x, y)
 			local high = lshift(((band(b1, lshift(1, bit)) > 0) and 1 or 0), 1)
 			local low = (band(b2, lshift(1, bit)) > 0) and 1 or 0
 			local clr = bor(high, low) + 1
-			Graphics.drawPixel(x + (7 - bit), y + (tile_y / 2), ppu_colors[clr], ppu_dbg_tex)
+			drawPixel(x + (7 - bit), y + (tile_y / 2), ppu_colors[clr], ppu_dbg_tex)
 		end
 	end
 end
 
-function ppu_update_dbg_tex()
+function ppu_show_dbg_tex()
 	local tile_id = 0
 	local tile_x = 0
 	local tile_y = 0
@@ -54,20 +79,61 @@ function ppu_update_dbg_tex()
 		tile_y = tile_y + 8
 		tile_x = 0
 	end
-end
-
-function ppu_init()
-	for i = 0, 39 do
-		ppu_oam_ram[i] = 0
-	end
 	
-	for i = 0, 0x1FFF do
-		ppu_vram[i] = 0
-	end
+	Graphics.drawImage(700, 144, ppu_dbg_tex)
 end
 
 function ppu_tick()
-
+	ppu_lines = ppu_lines + 1
+	
+	local ppu_mode = lcd_regs[1] % 4
+	if ppu_mode == 0 then -- MODE_HBLANK
+		if ppu_lines >= 456 then
+			lcd_regs[4] = lcd_regs[4] + 1
+			if lcd_regs[4] == lcd_regs[5] then
+				lcd_regs[1] = bor(lcd_regs[1], 0x04)
+				if band(lcd_regs[1], 0x40) == 0x40 then
+					cpu_set_interrupt(IT_LCD_STAT)
+				end
+			else
+				lcd_regs[1] = band(lcd_regs[1], bnot(0x04))
+			end
+			if lcd_regs[4] >= 144 then
+				cpu_set_interrupt(IT_VBLANK)
+				if band(lcd_regs[1], 0x10) == 0x10 then
+					cpu_set_interrupt(IT_LCD_START)
+				end
+				ppu_cur_frame = ppu_cur_frame + 1
+			else
+				lcd_set_mode(2)
+			end
+		end
+	elseif ppu_mode == 1 then -- MODE_VBLANK
+		if ppu_lines >= 456 then
+			lcd_regs[4] = lcd_regs[4] + 1
+			if lcd_regs[4] == lcd_regs[5] then
+				lcd_regs[1] = bor(lcd_regs[1], 0x04)
+				if band(lcd_regs[1], 0x40) == 0x40 then
+					cpu_set_interrupt(IT_LCD_STAT)
+				end
+			else
+				lcd_regs[1] = band(lcd_regs[1], bnot(0x04))
+			end
+			if lcd_regs[4] >= 154 then
+				lcd_set_mode(2)
+				lcd_regs[4] = 0
+			end
+			ppu_lines = 0
+		end
+	elseif ppu_mode == 2 then -- MODE_OAM
+		if ppu_lines >= 80 then
+			lcd_set_mode(3)
+		end
+	elseif ppu_mode == 3 then -- MODE_XFER
+		if ppu_lines >= 252 then
+			lcd_set_mode(0)
+		end
+	end
 end
 
 function ppu_oam_write(addr, val)
@@ -94,7 +160,7 @@ function ppu_vram_read(addr)
 	return ppu_vram[addr - 0x8000]
 end
 
-function lcd_init()
+local function lcd_init()
 	lcd_regs[0] = 0x91
 	lcd_regs[1] = 0x00
 	lcd_regs[2] = 0
@@ -112,6 +178,26 @@ function lcd_init()
 		bg_cols[i] = ppu_colors[i]
 		sp1_cols[i] = ppu_colors[i]
 		sp2_cols[i] = ppu_colors[i]
+	end
+end
+
+function ppu_init(debug)
+	ppu_cur_frame = 0
+	ppu_lines = 0
+	screen_tex = Graphics.createImage(160, 144, Color.new(0, 0, 0), MEM_RAM)
+	if debug then
+		ppu_dbg_tex = Graphics.createImage(128, 192, Color.new(0, 0, 0), MEM_RAM)
+	end
+	
+	lcd_init()
+	lcd_set_mode(2)
+	
+	for i = 0, 39 do
+		ppu_oam_ram[i] = 0
+	end
+	
+	for i = 0, 0x1FFF do
+		ppu_vram[i] = 0
 	end
 end
 

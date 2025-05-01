@@ -15,13 +15,12 @@ function emu_incr_cycles(cycles)
 		for j = 0, 3 do
 			emu_ticks = emu_ticks + 1
 			timer_tick()
+			ppu_tick()
 		end
 		
 		dma_tick()
 	end
 end
-
-local cycles_per_frame = 69905 -- Maximum number of cycles per frame
 
 -- Emulator options
 emu_version = "0.1" 
@@ -84,18 +83,12 @@ while true do
 	-- Main emulator code start
 	cartridge_load(rom_folder .. rom_path)
 	ram_init()
-	ppu_init()
+	ppu_init(debug_ppu)
 	cpu_init()
-	lcd_init()
 	timer_init()
 	io_init()
 	emu_state = EMU_RUNNING
 	emu_ticks = 0
-	
-	-- Init any optional stuffs
-	if debug_ppu then
-		ppu_dbg_tex = Graphics.createImage(128, 192, Color.new(0, 0, 0), MEM_RAM)
-	end
 
 	while emu_state ~= EMU_NOT_RUNNING do
 		Graphics.initBlend()
@@ -108,7 +101,8 @@ while true do
 			if use_profiler then
 				profile.start()
 			end
-			while emu_frame_ticks < cycles_per_frame do
+			local work_frame = ppu_cur_frame
+			while work_frame == ppu_cur_frame do
 				-- Perform one CPU step
 				local start_tick = emu_ticks
 				cpu_step()
@@ -126,8 +120,7 @@ while true do
 			end
 			-- Render on screen
 			if debug_ppu then
-				ppu_update_dbg_tex()
-				Graphics.drawImage(700, 144, ppu_dbg_tex)
+				ppu_show_dbg_tex()
 			end
 		end
 		Graphics.termBlend()
