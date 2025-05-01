@@ -12,6 +12,8 @@
 -- 0xFF00 - 0xFF7F : I/O Registers
 -- 0xFF80 - 0xFFFE : Zero Page
 
+local rshift = bit.rshift
+
 function bus_write(addr, val)
 	if addr < 0x8000 then
 		-- ROM data
@@ -49,8 +51,8 @@ function bus_write(addr, val)
 end
 
 function bus_write16(addr, val)
-	bus_write(addr, bit32.band(val, 0xFF))
-	bus_write(addr + 1, bit32.rshift(bit32.band(val, 0xFF00), 8))
+	bus_write(addr, val % 0x100)
+	bus_write(addr + 1, rshift(val, 8) % 0x100)
 end
 
 function bus_read(addr)

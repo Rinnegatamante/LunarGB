@@ -2,7 +2,7 @@ local timer_div = 0
 local timer_tima = 0
 local timer_tma = 0
 local timer_tac = 0
-local band = bit32.band
+local band = bit.band
 
 function timer_init()
 	timer_div = 0xAC00

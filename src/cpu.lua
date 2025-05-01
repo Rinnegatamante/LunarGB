@@ -116,16 +116,16 @@ local reg_names = {
 }
 
 -- Localized bit32 funcs
-local bxor = bit32.bxor
-local band = bit32.band
-local bnot = bit32.bnot
-local bor = bit32.bor
-local lshift = bit32.lshift
-local rshift = bit32.rshift
+local bxor = bit.bxor
+local band = bit.band
+local bnot = bit.bnot
+local bor = bit.bor
+local lshift = bit.lshift
+local rshift = bit.rshift
 
 -- Interrupt types
 IT_VBLANK    = 0x01
-IT_LCD_STAT = 0x02
+IT_LCD_STAT  = 0x02
 IT_TIMER     = 0x04
 IT_SERIAL    = 0x08
 IT_JOYPAD    = 0x10

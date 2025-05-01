@@ -295,7 +295,7 @@ function cartridge_load(path)
 	-- Parsing the header
 	rom_name = string.sub(rom_data_str, 1 + cart_addrs.title.addr, 1 + cart_addrs.title.addr + cart_addrs.title.size)
 	rom_type = rom_data[cart_addrs.type.addr]
-	rom_size = bit32.lshift(32, rom_data[cart_addrs.rom_size.addr])
+	rom_size = bit.lshift(32, rom_data[cart_addrs.rom_size.addr])
 	local licensee_val = rom_data[cart_addrs.lic_code.addr]
 	if licensee_val == 0x33 then
 		licensee_val = string.sub(rom_data_str, 1 + cart_addrs.new_lic_code.addr, 1 + cart_addrs.new_lic_code.addr + cart_addrs.new_lic_code.size)
@@ -314,7 +314,7 @@ function cartridge_load(path)
 	for i = 0x134, 0x14c, 1 do
 		x = x - rom_data[i] - 1
 	end
-	if bit32.band(x, 0xFF) == hdr_checksum then
+	if bit.band(x, 0xFF) == hdr_checksum then
 		System.consolePrint("Header checksum passed!")
 	else
 		System.consolePrint("Header checksum failed!")

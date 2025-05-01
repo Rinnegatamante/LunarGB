@@ -32,11 +32,11 @@
 -- FS_PUSH  = 4
 
 -- Localized commonly used functions
-local bor = bit32.bor
-local band = bit32.band
-local rshift = bit32.rshift
-local lshift = bit32.lshift
-local bnot = bit32.bnot
+local bor = bit.bor
+local band = bit.band
+local rshift = bit.rshift
+local lshift = bit.lshift
+local bnot = bit.bnot
 local drawPixel = Graphics.drawPixel
 local drawImage = Graphics.drawScaleImage
 
